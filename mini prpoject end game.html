@@ -1,0 +1,3434 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>CampusConnect — Exclusive College Social Network & AI Study Companion</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+    /* Custom Scrollbars & 3D Flashcard Flip Utilities */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.45);
+    }
+
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    @keyframes pulseFlame {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.14); }
+    }
+    .flame-anim {
+      animation: pulseFlame 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- ===================================================================== -->
+  <!-- AUTHENTICATION GATE OVERLAY (STUDENT OTP LOGIN & ADMIN PORTAL)        -->
+  <!-- ===================================================================== -->
+  <div id="authGateModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 my-8 relative overflow-hidden">
+      <!-- Top Decorative Gradient Bar -->
+      <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-indigo-600 via-violet-500 to-fuchsia-500"></div>
+
+      <!-- Brand Header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-fuchsia-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-extrabold text-xl tracking-tight">CampusConnect</h2>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Verified Portal</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Exclusive College Directory &bull; AI Study Companion</p>
+          </div>
+        </div>
+        <button onclick="quickDemoStudentLogin()" class="text-[11px] font-bold px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 transition-all" title="Instant Demo Login">
+          ⚡ Skip / Demo Login
+        </button>
+      </div>
+
+      <!-- Role Mode Switcher: Student Login vs Admin Login -->
+      <div class="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/90">
+        <button onclick="switchAuthRoleTab('student')" id="auth-tab-student" class="py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all bg-indigo-600 text-white shadow-sm flex items-center justify-center gap-2">
+          <i data-lucide="user-check" class="w-4 h-4"></i>
+          <span>Student OTP Login</span>
+        </button>
+        <button onclick="switchAuthRoleTab('admin')" id="auth-tab-admin" class="py-2.5 px-4 rounded-xl text-xs font-bold transition-all text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i>
+          <span>Admin Portal</span>
+        </button>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- STUDENT 3-STEP OTP SIGNUP / LOGIN FLOW                            -->
+      <!-- ================================================================= -->
+      <div id="auth-panel-student" class="space-y-5">
+        <!-- Step Progress Indicator -->
+        <div class="flex items-center justify-between text-[11px] font-bold px-1">
+          <div id="step-ind-1" class="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+            <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+            <span>Email &amp; Mobile</span>
+          </div>
+          <div class="h-0.5 flex-1 mx-2 bg-slate-200 dark:bg-slate-800"></div>
+          <div id="step-ind-2" class="flex items-center gap-1.5 text-slate-400">
+            <span class="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[10px]">2</span>
+            <span>Verify OTP</span>
+          </div>
+          <div class="h-0.5 flex-1 mx-2 bg-slate-200 dark:bg-slate-800"></div>
+          <div id="step-ind-3" class="flex items-center gap-1.5 text-slate-400">
+            <span class="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[10px]">3</span>
+            <span>Profile Details</span>
+          </div>
+        </div>
+
+        <!-- STEP 1: EMAIL & PHONE NUMBER -->
+        <form id="student-step-1" onsubmit="handleSendStudentOtp(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">College Email ID *</label>
+            <div class="relative">
+              <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input id="loginEmailInput" type="email" required value="student@gcoea.ac.in" placeholder="yourname@college.ac.in" class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Supports <code class="text-indigo-500">.ac.in</code>, <code class="text-indigo-500">.edu.in</code>, or personal student email.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">10-Digit Mobile Number (for OTP) *</label>
+            <div class="flex gap-2">
+              <span class="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold flex items-center">+91</span>
+              <input id="loginPhoneInput" type="tel" required pattern="[0-9]{10}" maxlength="10" value="9876543210" placeholder="9876543210" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition-all">
+            <i data-lucide="smartphone" class="w-4 h-4"></i>
+            <span>Send 6-Digit Verification OTP</span>
+          </button>
+        </form>
+
+        <!-- STEP 2: 6-DIGIT OTP VERIFICATION -->
+        <form id="student-step-2" onsubmit="handleVerifyStudentOtp(event)" class="hidden space-y-4">
+          <!-- Simulated SMS/Email OTP Banner for Easy Testing -->
+          <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                <i data-lucide="message-square-code" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <p class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Live Campus OTP Gateway</p>
+                <p class="text-xs text-slate-700 dark:text-slate-200">Your Verification OTP is: <strong id="generatedOtpDisplay" class="font-mono text-sm text-emerald-600 dark:text-emerald-400 tracking-wider">482910</strong></p>
+              </div>
+            </div>
+            <button type="button" onclick="autoFillStudentOtp()" class="shrink-0 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold shadow-sm">
+              Auto-Fill OTP
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Enter 6-Digit OTP sent to <span id="otpTargetLabel" class="text-indigo-500"></span></label>
+            <input id="otpCodeInput" type="text" required maxlength="6" placeholder="Enter 6-digit OTP" class="w-full text-center tracking-[0.5em] font-mono text-lg font-extrabold py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="goToStudentStep(1)" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold">
+              &larr; Back
+            </button>
+            <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span>Verify OTP &amp; Continue</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- STEP 3: STUDENT USERNAME & ACADEMIC DETAILS -->
+        <form id="student-step-3" onsubmit="handleCompleteStudentSignup(event)" class="hidden space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 mb-1">Unique Username *</label>
+              <input id="regUsernameInput" type="text" required value="@aarav_cse" placeholder="@username" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 mb-1">Student Full Name *</label>
+              <input id="regFullNameInput" type="text" required value="Aarav Sharma" placeholder="Full Name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 mb-1">Engineering Branch *</label>
+              <select id="regBranchInput" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                <option value="CSE">CSE</option>
+                <option value="IT">IT</option>
+                <option value="ENTC">ENTC</option>
+                <option value="AI & DS">AI &amp; DS</option>
+                <option value="Mech">Mechanical</option>
+                <option value="Civil">Civil</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 mb-1">Academic Year *</label>
+              <select id="regYearInput" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                <option value="3rd Year" selected>3rd Year</option>
+                <option value="4th Year">4th Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="1st Year">1st Year</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">Top Technical Skills (comma separated) *</label>
+            <input id="regSkillsInput" type="text" required value="Java, DSA, React, Node.js, Python" placeholder="Java, Python, React, DSA" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">Bio / Achievements Summary</label>
+            <textarea id="regBioInput" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">Full-Stack Developer & AI Enthusiast. Building CampusConnect for 3rd Year Mini Project.</textarea>
+          </div>
+
+          <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg">
+            <i data-lucide="rocket" class="w-4 h-4"></i>
+            <span>Complete Setup &amp; Enter CampusConnect</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- ADMIN PORTAL LOGIN FLOW                                           -->
+      <!-- ================================================================= -->
+      <div id="auth-panel-admin" class="hidden space-y-4">
+        <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3">
+          <div class="text-xs">
+            <p class="font-bold text-amber-600 dark:text-amber-400">🔑 Official Admin Credentials (Viva Demo)</p>
+            <p class="text-slate-600 dark:text-slate-300 mt-0.5 font-mono text-[11px]">
+              Username: <strong>admin</strong> &nbsp;|&nbsp; Password: <strong>Admin@123</strong>
+            </p>
+          </div>
+          <button type="button" onclick="autoFillAdminCredentials()" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] shrink-0">
+            Auto-Fill Admin
+          </button>
+        </div>
+
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Admin Username</label>
+            <input id="adminUsernameInput" type="text" required placeholder="admin" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Admin Password</label>
+            <input id="adminPasswordInput" type="password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500" />
+          </div>
+          <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>Login to Campus Admin Control Center</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- GEMINI AI API KEY SETTINGS MODAL                                      -->
+  <!-- ===================================================================== -->
+  <div id="apiKeyModal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <i data-lucide="key-round" class="w-5 h-5 text-indigo-500"></i>
+          Real Gemini AI API Configuration
+        </h3>
+        <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+        In this live preview, <strong>Real Gemini AI is already connected automatically</strong>! If you download <code class="text-indigo-500">index.html</code> to run locally on your laptop, you can optionally paste your free Google Gemini API key (<code class="text-indigo-500">AIza...</code>) below:
+      </p>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-400 mb-1">Gemini API Key (Optional in Preview)</label>
+        <input id="customGeminiKeyInput" type="password" placeholder="AIzaSy... (Leave blank to use built-in preview AI)" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs font-mono" />
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <button onclick="closeApiKeyModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">Cancel</button>
+        <button onclick="saveCustomGeminiKey()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold">Save API Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOP NAVIGATION HEADER                                                 -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-white/85 dark:bg-slate-900/85 border-b border-slate-200/80 dark:border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <!-- Brand Logo & Verified College Domain Badge -->
+      <div class="flex items-center gap-3">
+        <div onclick="switchTab('feed')" class="cursor-pointer flex items-center gap-2.5 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-fuchsia-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-600 via-violet-500 to-fuchsia-500 dark:from-indigo-400 dark:via-violet-300 dark:to-fuchsia-400 bg-clip-text text-transparent">
+                CampusConnect
+              </span>
+              <span class="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <i data-lucide="shield-check" class="w-3 h-3"></i>
+                Verified .ac.in
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
+              Campus Directory &bull; Senior-Junior Network &bull; AI Study Buddy
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Controls: Streak Counter, Quick AI Button, Theme Toggle & User Badge -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Daily Study Streak Badge -->
+        <button onclick="openMcqArenaDirect()" title="Complete Daily Quiz to boost your Study Streak!" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 transition-all">
+          <i data-lucide="flame" class="w-4 h-4 fill-amber-500 text-amber-500 flame-anim"></i>
+          <div class="text-left">
+            <span id="headerStreakCount" class="font-bold text-xs sm:text-sm">12</span>
+            <span class="text-xs font-semibold">Day Streak</span>
+          </div>
+        </button>
+
+        <!-- Quick Jump to AI Doubt Solver -->
+        <button onclick="switchTab('ai')" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-semibold transition-all">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>Ask AI Professor</span>
+        </button>
+
+        <!-- Gemini API Key Config Button -->
+        <button onclick="openApiKeyModal()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-500 transition-colors" title="Configure Real Gemini API Key">
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors" title="Toggle Dark/Light Mode">
+          <i id="themeIcon" data-lucide="sun" class="w-4 h-4"></i>
+        </button>
+
+        <!-- Current Logged-In Student Profile Pill -->
+        <button onclick="openEditProfileModal()" class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 transition-all">
+          <div id="headerUserAvatar" class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-xs flex items-center justify-center">
+            AS
+          </div>
+          <div class="hidden sm:block text-left">
+            <p id="headerUserName" class="text-xs font-bold leading-none">Aarav Sharma</p>
+            <p id="headerUserMeta" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">CSE &bull; 3rd Year</p>
+          </div>
+        </button>
+
+        <!-- Switch Account / Logout Button -->
+        <button onclick="openAuthGateModal()" class="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold flex items-center gap-1 transition-all" title="Logout / Switch Student or Admin">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span class="hidden xl:inline">Login / Admin</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN WORKSPACE CONTAINER                                              -->
+  <!-- ===================================================================== -->
+  <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-24 lg:pb-10">
+
+    <!-- LEFT NAVIGATION SIDEBAR (Desktop) -->
+    <aside class="hidden lg:block lg:col-span-3">
+      <div class="sticky top-20 space-y-5">
+        <!-- Navigation Menu Card -->
+        <nav class="bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-1">
+          <button onclick="switchTab('feed')" id="nav-feed" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="layout-grid" class="w-5 h-5"></i>
+              <span>Campus Feed</span>
+            </span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 font-semibold">Live</span>
+          </button>
+
+          <button onclick="switchTab('directory')" id="nav-directory" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="users" class="w-5 h-5"></i>
+              <span>Skill Directory</span>
+            </span>
+            <span id="sidebarDirCount" class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">8</span>
+          </button>
+
+          <button onclick="switchTab('chat')" id="nav-chat" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="message-square-text" class="w-5 h-5"></i>
+              <span>Senior-Junior Chat</span>
+            </span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          </button>
+
+          <button onclick="switchTab('ai')" id="nav-ai" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="bot" class="w-5 h-5"></i>
+              <span>AI Study Buddy</span>
+            </span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white font-bold">Real AI</span>
+          </button>
+
+          <button onclick="switchTab('admin')" id="nav-admin" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="shield-alert" class="w-5 h-5"></i>
+              <span>Admin Dashboard</span>
+            </span>
+            <span id="adminBadgePill" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 font-bold">Admin</span>
+          </button>
+        </nav>
+
+        <!-- Current Student Mini Profile Card -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div id="sideUserAvatar" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-fuchsia-600 text-white font-bold text-base flex items-center justify-center shadow-md shadow-indigo-500/20">
+                AS
+              </div>
+              <div>
+                <div class="flex items-center gap-1">
+                  <h3 id="sideUserName" class="font-bold text-sm">Aarav Sharma</h3>
+                  <i data-lucide="badge-check" class="w-4 h-4 text-indigo-500"></i>
+                </div>
+                <p id="sideUserHandle" class="text-[11px] font-mono text-indigo-500">@aarav_cse</p>
+                <p id="sideUserEmail" class="text-xs text-slate-500 dark:text-slate-400">aarav.cse@gcoea.ac.in</p>
+                <span id="sideUserBranchYear" class="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                  CSE &bull; 3rd Year
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p id="sideUserBio" class="mt-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Full-Stack Developer &amp; AI Enthusiast. Building CampusConnect for 3rd Year Mini Project.
+          </p>
+
+          <!-- User Skills -->
+          <div id="sideUserSkills" class="mt-3 flex flex-wrap gap-1.5"></div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+            <button onclick="openEditProfileModal()" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
+              <i data-lucide="user-pen" class="w-3.5 h-3.5"></i> Edit Profile
+            </button>
+            <button onclick="openAuthGateModal()" class="text-rose-500 hover:underline font-semibold flex items-center gap-1">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Switch User
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- =================================================================== -->
+    <!-- CENTRAL / MAIN DYNAMIC VIEW AREA                                    -->
+    <!-- =================================================================== -->
+    <main class="lg:col-span-9">
+
+      <!-- ================================================================= -->
+      <!-- VIEW 1: INSTAGRAM-STYLE CAMPUS FEED                               -->
+      <!-- ================================================================= -->
+      <section id="view-feed" class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <!-- Feed Column -->
+        <div class="xl:col-span-8 space-y-5">
+
+          <!-- Official Admin Broadcast Banner (Dynamic) -->
+          <div id="officialAnnouncementBanner" class="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-rose-500/15 border border-amber-500/30 rounded-2xl p-4 flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <div class="p-2 rounded-xl bg-amber-500 text-slate-950 shrink-0 mt-0.5">
+                <i data-lucide="megaphone" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500 text-slate-950">Official Campus Notice</span>
+                  <span id="announcementTime" class="text-[11px] text-slate-500 dark:text-slate-400">Pinned by Admin</span>
+                </div>
+                <p id="announcementText" class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 mt-1">
+                  📢 3rd Year Mini-Project Final Evaluation &amp; Viva starts this week! Make sure your team profiles and project GitHub links are updated in the Campus Skill Directory.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Create New Campus Post Card -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-bold flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-500"></i>
+                Share Achievement, Project or Campus Update
+              </h2>
+              <span class="text-[11px] text-slate-400">Visible to Verified College Peers</span>
+            </div>
+
+            <textarea id="newPostContent" rows="3" placeholder="What did you build, win, or learn today? (e.g., Completed our 3rd Year Mini Project, Won Hackathon, Need team for SIH...)" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"></textarea>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-3">
+              <!-- Category Selector -->
+              <div>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Post Category</label>
+                <select id="newPostCategory" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="Achievement">🏆 Achievement</option>
+                  <option value="Project">💻 Project Showcase</option>
+                  <option value="Update">📢 Campus Update / Query</option>
+                </select>
+              </div>
+
+              <!-- Skill Tags Input -->
+              <div>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Skill Tags (comma separated)</label>
+                <input id="newPostTags" type="text" placeholder="React, Java, DSA, AI" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+
+              <!-- Optional Project / GitHub Link -->
+              <div>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">GitHub / Certificate Link (optional)</label>
+                <input id="newPostLink" type="url" placeholder="https://github.com/..." class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+            </div>
+
+            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800">
+                  <i data-lucide="code-2" class="w-3.5 h-3.5 text-indigo-500"></i> Tag skills so juniors can discover you
+                </span>
+              </div>
+              <button onclick="handleCreatePost()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-indigo-500/20 transition-all">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                Publish Post
+              </button>
+            </div>
+          </div>
+
+          <!-- Feed Category Filters & Search Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80">
+              <button onclick="setFeedFilter('All')" id="feed-filter-All" class="feed-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">All Posts</button>
+              <button onclick="setFeedFilter('Achievement')" id="feed-filter-Achievement" class="feed-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">🏆 Achievements</button>
+              <button onclick="setFeedFilter('Project')" id="feed-filter-Project" class="feed-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">💻 Projects</button>
+              <button onclick="setFeedFilter('Update')" id="feed-filter-Update" class="feed-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">📢 Updates</button>
+              <button onclick="setFeedFilter('Bookmarked')" id="feed-filter-Bookmarked" class="feed-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">🔖 Saved</button>
+            </div>
+
+            <div class="relative flex-1 sm:max-w-[210px]">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input id="feedSearchInput" oninput="renderFeed()" type="text" placeholder="Filter by tag or name..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+
+          <!-- Dynamic Feed Posts Container -->
+          <div id="feedPostsContainer" class="space-y-4"></div>
+        </div>
+
+        <!-- Right Sidebar Widgets inside Feed View -->
+        <div class="xl:col-span-4 space-y-5">
+          <!-- Daily Study Streak & Quiz Arena Card -->
+          <div class="bg-gradient-to-br from-indigo-900 via-slate-900 to-violet-950 text-white rounded-2xl p-5 border border-indigo-500/30 shadow-lg relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/20">
+                <i data-lucide="flame" class="w-3.5 h-3.5 fill-amber-400"></i> Academic Streak
+              </span>
+              <span id="widgetStreakBadge" class="text-2xl font-extrabold text-amber-400">12 Days</span>
+            </div>
+            <h3 class="mt-3 font-bold text-base">Daily 5-MCQ Challenge</h3>
+            <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+              Keep your campus streak alive! Attempt 5 AI-curated subject MCQs daily for placement &amp; semester prep.
+            </p>
+            <button onclick="openMcqArenaDirect()" class="mt-4 w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+              Start Today's MCQ Quiz
+            </button>
+          </div>
+
+          <!-- Trending Campus Skills Card -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-sm flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-4 h-4 text-indigo-500"></i>
+                Trending Campus Skills
+              </h3>
+              <button onclick="switchTab('directory')" class="text-[11px] text-indigo-500 hover:underline font-semibold">Explore All</button>
+            </div>
+            <div id="trendingSkillsList" class="space-y-2.5"></div>
+          </div>
+
+          <!-- Top Senior Mentors Online -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-sm flex items-center gap-2">
+                <i data-lucide="award" class="w-4 h-4 text-emerald-500"></i>
+                Senior Mentors Available
+              </h3>
+            </div>
+            <div id="quickMentorsWidget" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 2: SENIOR-JUNIOR SKILL DIRECTORY                             -->
+      <!-- ================================================================= -->
+      <section id="view-directory" class="hidden space-y-5">
+        <!-- Header & Search Controls -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 class="text-lg font-extrabold flex items-center gap-2">
+                <i data-lucide="users" class="w-5 h-5 text-indigo-500"></i>
+                Campus Skill &amp; Senior-Junior Directory
+              </h1>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Find verified seniors and peers by programming skills, branch, hackathons, or placement experience.
+              </p>
+            </div>
+            <div class="relative sm:w-72">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input id="dirSearchInput" oninput="renderDirectory()" type="text" placeholder="Search name, React, GATE, SIH..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+
+          <!-- Filters Row: Branch, Year & Quick Skill Pills -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Filter by Branch</label>
+              <select id="dirBranchSelect" onchange="renderDirectory()" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-semibold">
+                <option value="All">All Engineering Branches</option>
+                <option value="CSE">Computer Science (CSE)</option>
+                <option value="IT">Information Technology (IT)</option>
+                <option value="ENTC">Electronics &amp; Telecom (ENTC)</option>
+                <option value="AI & DS">AI &amp; Data Science</option>
+                <option value="Mech">Mechanical Engineering</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Filter by Academic Year</label>
+              <select id="dirYearSelect" onchange="renderDirectory()" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-semibold">
+                <option value="All">All Years (1st to 4th Year)</option>
+                <option value="4th Year">4th Year (Final Year Seniors)</option>
+                <option value="3rd Year">3rd Year (Pre-Final Seniors)</option>
+                <option value="2nd Year">2nd Year (Sophomores)</option>
+                <option value="1st Year">1st Year (Freshers)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Filter by Core Skill</label>
+              <select id="dirSkillSelect" onchange="renderDirectory()" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-semibold">
+                <option value="All">All Technical Skills</option>
+                <option value="Java">Java</option>
+                <option value="DSA">Data Structures &amp; Algorithms (DSA)</option>
+                <option value="React">React / Next.js</option>
+                <option value="Python">Python &amp; FastAPI</option>
+                <option value="Machine Learning">AI / Machine Learning</option>
+                <option value="DBMS">DBMS &amp; SQL</option>
+                <option value="Embedded C">Embedded C / IoT</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Directory Student Cards Grid -->
+        <div id="directoryGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 3: SENIOR-JUNIOR MENTORSHIP CHAT                             -->
+      <!-- ================================================================= -->
+      <section id="view-chat" class="hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-12 h-[640px]">
+
+          <!-- Left Column: Peers & Seniors Conversation List -->
+          <div class="md:col-span-4 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800">
+              <h2 class="font-bold text-sm flex items-center gap-2">
+                <i data-lucide="messages-square" class="w-4 h-4 text-indigo-500"></i>
+                Senior-Junior Mentorship Inbox
+              </h2>
+              <p class="text-[11px] text-slate-400 mt-0.5">Ask for placement tips, PYQ notes &amp; project help</p>
+            </div>
+            <div id="chatPeersList" class="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60"></div>
+          </div>
+
+          <!-- Right Column: Active Conversation Window -->
+          <div class="md:col-span-8 flex flex-col h-full bg-slate-50/50 dark:bg-slate-950/40">
+            <!-- Active Chat Header -->
+            <div id="activeChatHeader" class="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between"></div>
+
+            <!-- Messages Scroll Box -->
+            <div id="chatMessagesContainer" class="flex-1 p-4 overflow-y-auto space-y-3"></div>
+
+            <!-- Quick Note / Prompt Chips for Mentorship -->
+            <div class="px-4 py-2 bg-white/60 dark:bg-slate-900/60 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2 overflow-x-auto">
+              <button onclick="sendQuickMentorshipMsg('Bhaiya/Didi, can you share 3rd Year DBMS & OS important viva notes PDF?')" class="shrink-0 text-[11px] px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 font-medium">
+                📄 Request PYQ &amp; Notes PDF
+              </button>
+              <button onclick="sendQuickMentorshipMsg('How should I prepare DSA in Java for upcoming campus placements?')" class="shrink-0 text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 font-medium">
+                💼 Ask Placement Roadmap
+              </button>
+              <button onclick="sendQuickMentorshipMsg('Can you review our 3rd Year Mini Project CampusConnect architecture?')" class="shrink-0 text-[11px] px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 font-medium">
+                🚀 Mini Project Review
+              </button>
+            </div>
+
+            <!-- Chat Input Form -->
+            <form onsubmit="handleSendChatMessage(event)" class="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
+              <button type="button" onclick="attachMockPdfNote()" title="Share Notes / Resume PDF" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition-colors">
+                <i data-lucide="paperclip" class="w-4 h-4"></i>
+              </button>
+              <input id="chatMessageInput" type="text" placeholder="Write a message to your senior/junior..." class="flex-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <button type="submit" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-all">
+                <span>Send</span>
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 4: AI ACADEMIC COMPANION (3 INTERACTIVE SUB-TABS)            -->
+      <!-- ================================================================= -->
+      <section id="view-ai" class="hidden space-y-5">
+        <!-- Top AI Module Header & Sub-Tab Switcher -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                Powered by Gemini AI + Smart Engineering Engine
+              </span>
+            </div>
+            <h1 class="text-lg font-extrabold mt-1">AI Academic Companion &amp; Placement Mentor</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Topic-wise Doubt Solving, Automated Daily MCQ Quizzes &amp; Quick Exam Flashcards
+            </p>
+          </div>
+
+          <!-- 3 Sub-Tab Buttons -->
+          <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl self-start sm:self-auto">
+            <button onclick="switchAiSubTab('doubt')" id="ai-sub-doubt" class="ai-sub-btn px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all">
+              <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+              <span>Doubt Solver</span>
+            </button>
+            <button onclick="switchAiSubTab('mcq')" id="ai-sub-mcq" class="ai-sub-btn px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all">
+              <i data-lucide="check-square" class="w-3.5 h-3.5"></i>
+              <span>Daily MCQ Arena</span>
+            </button>
+            <button onclick="switchAiSubTab('revision')" id="ai-sub-revision" class="ai-sub-btn px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all">
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+              <span>Flashcards</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- --------------------------------------------------------------- -->
+        <!-- SUB-TAB 4A: AI DOUBT & HOMEWORK SOLVER                          -->
+        <!-- --------------------------------------------------------------- -->
+        <div id="ai-panel-doubt" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm overflow-hidden flex flex-col h-[600px]">
+          <!-- Subject Selector Bar -->
+          <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold text-slate-500">Subject:</span>
+              <select id="doubtSubjectSelect" class="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 text-xs font-semibold">
+                <option value="Data Structures & Algorithms">Data Structures &amp; Algorithms (DSA)</option>
+                <option value="Java & Object Oriented Programming">Java &amp; OOPs</option>
+                <option value="Database Management Systems (DBMS)">Database Management (DBMS)</option>
+                <option value="Operating Systems">Operating Systems (OS)</option>
+                <option value="Analog & Digital Communication">Analog &amp; Digital Communication</option>
+              </select>
+              <input id="doubtTopicInput" type="text" value="AVL Trees & Time Complexity" placeholder="Topic name..." class="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 text-xs w-48" />
+            </div>
+            <button onclick="clearAiDoubtChat()" class="text-[11px] text-slate-400 hover:text-rose-500 flex items-center gap-1">
+              <i data-lucide="trash-2" class="w-3 h-3"></i> Clear Chat
+            </button>
+          </div>
+
+          <!-- AI Chat Messages Container -->
+          <div id="aiDoubtMessages" class="flex-1 p-4 overflow-y-auto space-y-4"></div>
+
+          <!-- Quick Engineering Prompt Chips -->
+          <div class="px-4 py-2 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200/60 dark:border-slate-800 flex items-center gap-2 overflow-x-auto">
+            <button onclick="triggerQuickDoubt('Explain this topic with a real-world engineering analogy and step-by-step dry run.')" class="shrink-0 text-[11px] px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 font-semibold">
+              💡 Explain with Analogy
+            </button>
+            <button onclick="triggerQuickDoubt('Write a clean, well-commented Java implementation with Time and Space complexity.')" class="shrink-0 text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 font-semibold">
+              💻 Java Code + Complexity
+            </button>
+            <button onclick="triggerQuickDoubt('Give me the top 5 external viva and placement interview questions on this topic.')" class="shrink-0 text-[11px] px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 font-semibold">
+              🎓 Top 5 Viva Questions
+            </button>
+          </div>
+
+          <!-- Input Bar -->
+          <form onsubmit="handleAskAiDoubt(event)" class="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
+            <input id="aiDoubtInput" type="text" placeholder="Ask any homework doubt, algorithm, theorem, or code bug..." class="flex-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <button id="aiDoubtSubmitBtn" type="submit" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Solve Doubt</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- --------------------------------------------------------------- -->
+        <!-- SUB-TAB 4B: DAILY MCQ & STREAK ARENA                            -->
+        <!-- --------------------------------------------------------------- -->
+        <div id="ai-panel-mcq" class="hidden space-y-5">
+          <!-- Quiz Configuration Header -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1">Select Preset Subject</label>
+                <select id="mcqSubjectSelect" onchange="syncCustomMcqTopicFromSelect()" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-semibold">
+                  <option value="Data Structures & Algorithms">Data Structures &amp; Algorithms</option>
+                  <option value="Java & Object Oriented Programming">Java &amp; OOPs</option>
+                  <option value="Database Management Systems (DBMS)">DBMS &amp; SQL</option>
+                  <option value="Operating Systems">Operating Systems</option>
+                  <option value="Analog & Digital Communication">Analog Communication</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1">Or Type Any Custom Topic</label>
+                <input id="mcqCustomTopicInput" type="text" placeholder="e.g. Computer Networks, Python, React..." class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1">Difficulty Level</label>
+                <select id="mcqDifficultySelect" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-semibold">
+                  <option value="Medium (Placement OA)">Medium (Placement OA)</option>
+                  <option value="Hard (GATE / Core)">Hard (GATE / University Exam)</option>
+                  <option value="Easy (Concept Check)">Easy (Quick Concept Check)</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <button onclick="generateFreshAiMcqs()" id="generateMcqBtn" class="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all">
+                  <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+                  <span>Generate Real AI Quiz</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active MCQ Question Card -->
+          <div id="mcqArenaCard" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-sm"></div>
+        </div>
+
+        <!-- --------------------------------------------------------------- -->
+        <!-- SUB-TAB 4C: QUICK REVISION 3D FLASHCARDS                        -->
+        <!-- --------------------------------------------------------------- -->
+        <div id="ai-panel-revision" class="hidden space-y-5">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-3 flex-1">
+              <label class="text-xs font-bold text-slate-500">Subject:</label>
+              <select id="flashcardSubjectSelect" onchange="loadSubjectFlashcards()" class="rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-semibold">
+                <option value="Data Structures & Algorithms">Data Structures &amp; Algorithms</option>
+                <option value="Java & Object Oriented Programming">Java &amp; OOPs</option>
+                <option value="Database Management Systems (DBMS)">DBMS &amp; SQL</option>
+                <option value="Operating Systems">Operating Systems</option>
+                <option value="Analog & Digital Communication">Analog Communication</option>
+              </select>
+              <input id="flashcardCustomTopicInput" type="text" placeholder="Or type any custom unit/topic..." class="rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs flex-1 min-w-[180px]" />
+            </div>
+            <button onclick="generateFreshAiFlashcards()" id="genFlashcardsBtn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Generate Real AI Flashcards</span>
+            </button>
+          </div>
+
+          <!-- 3D Flip Flashcard Container -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div class="lg:col-span-7">
+              <div onclick="flipCurrentFlashcard()" class="perspective-1000 cursor-pointer select-none">
+                <div id="flashcard3dInner" class="transform-style-3d relative w-full h-80 rounded-2xl">
+                  <!-- Front of Flashcard -->
+                  <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+                    <div class="flex items-center justify-between">
+                      <span id="fcCategoryBadge" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm">
+                        Viva &bull; Formula Card
+                      </span>
+                      <span id="fcCounterText" class="text-xs font-mono opacity-80">1 / 5</span>
+                    </div>
+                    <div class="my-auto">
+                      <p class="text-xs uppercase tracking-widest text-indigo-200 font-semibold mb-2">Question / Concept</p>
+                      <h3 id="fcFrontQuestion" class="text-lg sm:text-xl font-extrabold leading-snug"></h3>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-indigo-200 pt-3 border-t border-white/15">
+                      <span>Click card to flip for Answer &amp; Examiner Trap</span>
+                      <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+                    </div>
+                  </div>
+
+                  <!-- Back of Flashcard -->
+                  <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white dark:bg-slate-900 border-2 border-indigo-500 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        ✅ Crisp 30-Second Viva Answer
+                      </span>
+                      <span class="text-xs text-slate-400">Click to flip back</span>
+                    </div>
+                    <div class="my-auto space-y-3">
+                      <p id="fcBackAnswer" class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-medium"></p>
+                      <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <p class="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase">⚠️ External Examiner Follow-up Trap:</p>
+                        <p id="fcBackTrap" class="text-xs text-slate-600 dark:text-slate-300 mt-0.5"></p>
+                      </div>
+                    </div>
+                    <div class="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <span>High-Yield Exam Summary</span>
+                      <span>CampusConnect AI</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Flashcard Navigation Controls -->
+              <div class="mt-4 flex items-center justify-between">
+                <button onclick="prevFlashcard()" class="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5">
+                  <i data-lucide="arrow-left" class="w-4 h-4"></i> Previous
+                </button>
+                <button onclick="flipCurrentFlashcard()" class="px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold">
+                  Flip Card
+                </button>
+                <button onclick="nextFlashcard()" class="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5">
+                  Next <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Key Summary Points & Formulas List -->
+            <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-3">
+              <h3 class="font-bold text-sm flex items-center gap-2">
+                <i data-lucide="Sparkles" class="w-4 h-4 text-indigo-500"></i>
+                Quick Unit Revision Checklist
+              </h3>
+              <ul id="revisionSummaryBullets" class="space-y-2 text-xs text-slate-600 dark:text-slate-300"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 5: FULL ADMIN CONTROL CENTER DASHBOARD                       -->
+      <!-- ================================================================= -->
+      <section id="view-admin" class="hidden space-y-6">
+        <!-- Admin Top Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 border border-indigo-500/30 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-extrabold border border-amber-500/30">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span>CampusConnect Administrator Mode</span>
+            </div>
+            <h1 class="text-xl font-extrabold mt-2">Campus Directory &amp; Moderation Control Center</h1>
+            <p class="text-xs text-slate-300 mt-0.5">Verify college students, broadcast official exam notices, and moderate feed posts.</p>
+          </div>
+          <div id="adminAccessStatusBox" class="shrink-0"></div>
+        </div>
+
+        <!-- Admin KPI Stats Row -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="adminKpiGrid"></div>
+
+        <!-- Broadcast Official Campus Announcement -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-3">
+          <h2 class="font-bold text-sm flex items-center gap-2">
+            <i data-lucide="megaphone" class="w-4 h-4 text-amber-500"></i>
+            Publish Official Campus Notice (Pinned on Top of Student Feed)
+          </h2>
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <input id="adminNoticeInput" type="text" placeholder="Type official college notice, hackathon deadline, or exam update..." class="flex-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 text-xs" />
+            <button onclick="publishAdminAnnouncement()" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shrink-0">
+              Broadcast Notice
+            </button>
+          </div>
+        </div>
+
+        <!-- Manage Verified Students Table -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-bold text-sm flex items-center gap-2">
+              <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i>
+              Manage Registered College Students
+            </h2>
+            <span class="text-[11px] text-slate-400">Toggle Verified Badge or Remove Student</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase text-[10px]">
+                  <th class="py-2.5 px-3">Student</th>
+                  <th class="py-2.5 px-3">Branch &amp; Year</th>
+                  <th class="py-2.5 px-3">Skills</th>
+                  <th class="py-2.5 px-3">Streak</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminStudentsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/70"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Moderate Campus Feed Posts -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+          <h2 class="font-bold text-sm flex items-center gap-2">
+            <i data-lucide="file-check" class="w-4 h-4 text-emerald-500"></i>
+            Moderate Campus Feed Posts
+          </h2>
+          <div id="adminPostsList" class="space-y-2.5"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MOBILE BOTTOM NAVIGATION BAR                                          -->
+  <!-- ===================================================================== -->
+  <nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 flex items-center justify-around">
+    <button onclick="switchTab('feed')" id="mnav-feed" class="mnav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-xs font-semibold">
+      <i data-lucide="layout-grid" class="w-5 h-5"></i>
+      <span class="text-[10px]">Feed</span>
+    </button>
+    <button onclick="switchTab('directory')" id="mnav-directory" class="mnav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-xs font-semibold">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span class="text-[10px]">Directory</span>
+    </button>
+    <button onclick="switchTab('chat')" id="mnav-chat" class="mnav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-xs font-semibold">
+      <i data-lucide="message-square-text" class="w-5 h-5"></i>
+      <span class="text-[10px]">Mentors</span>
+    </button>
+    <button onclick="switchTab('ai')" id="mnav-ai" class="mnav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-xs font-semibold">
+      <i data-lucide="bot" class="w-5 h-5"></i>
+      <span class="text-[10px]">AI Buddy</span>
+    </button>
+    <button onclick="switchTab('admin')" id="mnav-admin" class="mnav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-xs font-semibold">
+      <i data-lucide="shield-alert" class="w-5 h-5"></i>
+      <span class="text-[10px]">Admin</span>
+    </button>
+  </nav>
+
+  <!-- ===================================================================== -->
+  <!-- EDIT PROFILE MODAL                                                    -->
+  <!-- ===================================================================== -->
+  <div id="editProfileModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <i data-lucide="user-check" class="w-5 h-5 text-indigo-500"></i>
+          Update Your Verified Student Profile
+        </h3>
+        <button onclick="closeEditProfileModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-400 mb-1">Full Name</label>
+          <input id="modalUserName" type="text" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2" />
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-400 mb-1">Branch</label>
+            <select id="modalUserBranch" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2">
+              <option value="CSE">CSE</option>
+              <option value="IT">IT</option>
+              <option value="ENTC">ENTC</option>
+              <option value="AI & DS">AI &amp; DS</option>
+              <option value="Mech">Mech</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-400 mb-1">Year</label>
+            <select id="modalUserYear" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2">
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-400 mb-1">Bio / Headline</label>
+          <textarea id="modalUserBio" rows="2" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2"></textarea>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-400 mb-1">Your Skills (comma separated)</label>
+          <input id="modalUserSkills" type="text" class="w-full rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <button onclick="closeEditProfileModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">Cancel</button>
+        <button onclick="saveUserProfile()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOAST NOTIFICATION CONTAINER                                          -->
+  <!-- ===================================================================== -->
+  <div id="toastContainer" class="fixed bottom-16 lg:bottom-6 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT & GEMINI AI INTEGRATION                        -->
+  <!-- ===================================================================== -->
+  <script>
+    // =========================================================================
+    // 1. INITIAL MOCK DATA (PRE-LOADED INDIAN ENGINEERING COLLEGE DATA)
+    // =========================================================================
+    const STORAGE_KEY = 'campusconnect_v2_state_2026';
+    const CUSTOM_KEY_STORAGE = 'campusconnect_custom_gemini_key';
+    const apiKey = ""; // Canvas runtime automatically injects API key
+
+    let generatedOtpCode = '482910';
+
+    const DEFAULT_STATE = {
+      isAuthenticated: false,
+      isAdmin: false,
+      announcement: {
+        text: '📢 3rd Year Mini-Project Final Evaluation & Viva starts this week! Make sure your team profiles and project GitHub links are updated in the Campus Skill Directory.',
+        time: 'Pinned by Admin (admin)'
+      },
+      currentUser: {
+        id: 'u_me',
+        username: '@aarav_cse',
+        name: 'Aarav Sharma',
+        initials: 'AS',
+        collegeEmail: 'aarav.cse@gcoea.ac.in',
+        phone: '9876543210',
+        branch: 'CSE',
+        year: '3rd Year',
+        bio: 'Full-Stack Developer & AI Enthusiast. Building CampusConnect for 3rd Year Mini Project.',
+        skills: ['Java', 'DSA', 'React', 'Node.js', 'MongoDB'],
+        studyStreak: 12,
+        isVerified: true
+      },
+      students: [
+        {
+          id: 's1',
+          name: 'Rohan Deshmukh',
+          initials: 'RD',
+          avatarGrad: 'from-blue-600 to-indigo-600',
+          collegeEmail: 'rohan.d@gcoea.ac.in',
+          branch: 'CSE',
+          year: '4th Year',
+          bio: 'Placed at SDE-1 (18 LPA) | Ex-Intern @ Barclays | 600+ LeetCode in Java | Happy to guide juniors on DSA & System Design.',
+          skills: ['Java', 'DSA', 'System Design', 'Spring Boot', 'DBMS'],
+          achievements: ['Smart India Hackathon (SIH) Grand Finalist', 'Knight on LeetCode (1980 Rating)', 'Published IEEE Paper on Cloud Security'],
+          githubUrl: 'https://github.com/rohandeshmukh-dev',
+          studyStreak: 45,
+          isVerified: true,
+          online: true
+        },
+        {
+          id: 's2',
+          name: 'Sneha Kulkarni',
+          initials: 'SK',
+          avatarGrad: 'from-fuchsia-600 to-pink-600',
+          collegeEmail: 'sneha.k@gcoea.ac.in',
+          branch: 'AI & DS',
+          year: '4th Year',
+          bio: 'GATE CS/DA AIR 142 | Research Intern @ IIT Bombay | Helping 2nd & 3rd year students with Machine Learning, Python & RAG.',
+          skills: ['Python', 'Machine Learning', 'GenAI & RAG', 'DBMS', 'Data Structures'],
+          achievements: ['GATE 2026 AIR 142', 'Google Girl Hackathon Semi-Finalist', 'President - Campus AI Club'],
+          githubUrl: 'https://github.com/snehakulkarni-ai',
+          studyStreak: 62,
+          isVerified: true,
+          online: true
+        },
+        {
+          id: 's3',
+          name: 'Vikramaditya Patil',
+          initials: 'VP',
+          avatarGrad: 'from-emerald-600 to-teal-600',
+          collegeEmail: 'vikram.entc@gcoea.ac.in',
+          branch: 'ENTC',
+          year: '4th Year',
+          bio: 'Embedded Systems & IoT Lead | Texas Instruments Contest Winner | Ask me about Analog Communication, Microcontrollers & Core Placements.',
+          skills: ['Embedded C', 'IoT', 'Analog Communication', 'VLSI', 'Python'],
+          achievements: ['TI Innovation Challenge Top 10', 'Built Autonomous Agri-Drone', 'Core Placement Coordinator'],
+          githubUrl: 'https://github.com/vikrampatil-iot',
+          studyStreak: 29,
+          isVerified: true,
+          online: true
+        },
+        {
+          id: 's4',
+          name: 'Ananya Joshi',
+          initials: 'AJ',
+          avatarGrad: 'from-amber-500 to-orange-600',
+          collegeEmail: 'ananya.it@gcoea.ac.in',
+          branch: 'IT',
+          year: '3rd Year',
+          bio: 'UI/UX Designer & React Developer | GSoC Contributor | Building accessible web apps and mentoring 1st/2nd year juniors in frontend.',
+          skills: ['React', 'Tailwind CSS', 'TypeScript', 'UI/UX Figma', 'JavaScript'],
+          achievements: ['Google Summer of Code (GSoC) Contributor', 'Best UI Award at Hackverse 2025'],
+          githubUrl: 'https://github.com/ananyajoshi-ui',
+          studyStreak: 19,
+          isVerified: true,
+          online: false
+        },
+        {
+          id: 's5',
+          name: 'Kabir Verma',
+          initials: 'KV',
+          avatarGrad: 'from-violet-600 to-purple-600',
+          collegeEmail: 'kabir.cse@gcoea.ac.in',
+          branch: 'CSE',
+          year: '2nd Year',
+          bio: 'Sophomore exploring Competitive Programming in Java & Full-Stack Web Dev. Looking for hackathon teammates!',
+          skills: ['Java', 'DSA', 'HTML/CSS', 'React', 'SQL'],
+          achievements: ['CodeChef 3-Star Coder', '1st Place in Freshers Coding Cup'],
+          githubUrl: 'https://github.com/kabirverma-cp',
+          studyStreak: 14,
+          isVerified: true,
+          online: true
+        },
+        {
+          id: 's6',
+          name: 'Priya Nair',
+          initials: 'PN',
+          avatarGrad: 'from-cyan-600 to-blue-600',
+          collegeEmail: 'priya.mech@gcoea.ac.in',
+          branch: 'Mech',
+          year: '3rd Year',
+          bio: 'BAJA SAE India Team Captain | CAD/SolidWorks & Python Automation enthusiast.',
+          skills: ['SolidWorks', 'Python', 'MATLAB', 'Robotics'],
+          achievements: ['BAJA SAE All-Terrain Vehicle Design Winner', 'Secretary - Robotics Society'],
+          githubUrl: 'https://github.com/priyanair-mech',
+          studyStreak: 21,
+          isVerified: true,
+          online: false
+        }
+      ],
+      posts: [
+        {
+          id: 'p1',
+          authorName: 'Rohan Deshmukh',
+          authorInitials: 'RD',
+          authorGrad: 'from-blue-600 to-indigo-600',
+          authorBranch: 'CSE',
+          authorYear: '4th Year',
+          category: 'Achievement',
+          timestamp: '2 hours ago',
+          content: 'Super excited to share that our team won the First Runner-Up prize at the National Smart India Hackathon (SIH)! 🏆 For all 2nd & 3rd year juniors preparing for upcoming hackathons or DSA placement interviews, I have uploaded our system architecture deck and my curated 150 Java DSA sheet. Drop a comment or DM me in Mentorship Chat!',
+          skillTags: ['Java', 'DSA', 'System Design', 'SIH'],
+          projectLink: 'https://github.com/rohandeshmukh-dev/sih-winning-architecture',
+          likes: 48,
+          isLiked: false,
+          isBookmarked: false,
+          comments: [
+            { user: 'Kabir Verma (2nd Year CSE)', text: 'Congratulations Rohan Bhaiya! Just messaged you for the Java DSA sheet.', time: '1h ago' },
+            { user: 'Ananya Joshi (3rd Year IT)', text: 'Huge W! Well deserved team 🔥', time: '45m ago' }
+          ]
+        },
+        {
+          id: 'p2',
+          authorName: 'Sneha Kulkarni',
+          authorInitials: 'SK',
+          authorGrad: 'from-fuchsia-600 to-pink-600',
+          authorBranch: 'AI & DS',
+          authorYear: '4th Year',
+          category: 'Project',
+          timestamp: '5 hours ago',
+          content: 'Built a Syllabus-Locked RAG Chatbot & Automated Viva Flashcard Generator using Gemini API and Python! 💻 Juniors having their 3rd Year Mini Project viva this week—make sure you clearly explain your Database Schema, JWT Authentication flow, and JSON Schema validation to the external examiner.',
+          skillTags: ['Python', 'Machine Learning', 'React', 'DBMS'],
+          projectLink: 'https://github.com/snehakulkarni-ai/campus-rag-companion',
+          likes: 37,
+          isLiked: true,
+          isBookmarked: true,
+          comments: [
+            { user: 'Aarav Sharma (3rd Year CSE)', text: 'Thank you Sneha Didi! We integrated the Daily MCQ JSON schema and Streak counter in our mini project.', time: '3h ago' }
+          ]
+        },
+        {
+          id: 'p3',
+          authorName: 'Vikramaditya Patil',
+          authorInitials: 'VP',
+          authorGrad: 'from-emerald-600 to-teal-600',
+          authorBranch: 'ENTC',
+          authorYear: '4th Year',
+          category: 'Update',
+          timestamp: 'Yesterday',
+          content: '📢 Quick Revision Session for 3rd Year ENTC & CSE students: I have compiled crisp handwritten notes on Analog Communication (AM/FM Modulation, SNR, Nyquist Theorem) and Operating Systems deadlock algorithms. Ping me in the Senior-Junior chat to grab the PDF!',
+          skillTags: ['Analog Communication', 'Embedded C', 'Operating Systems'],
+          projectLink: '',
+          likes: 29,
+          isLiked: false,
+          isBookmarked: false,
+          comments: []
+        }
+      ],
+      conversations: {
+        's1': [
+          { sender: 'peer', text: 'Hey Aarav! Saw you are working on your 3rd Year Mini Project "CampusConnect". Let me know if you need any help with the backend architecture or Java/DSA prep!', time: '10:15 AM' },
+          { sender: 'me', text: 'Thanks Rohan Bhaiya! Hum log Campus Directory + AI Study Buddy bana rahe hain. Viva me external examiner kya-kya pooch sakte hain?', time: '10:18 AM' },
+          { sender: 'peer', text: 'External examiner sabse pehle poochenge: 1) College email verification kaise hota hai, 2) AI halluncination rokne ke liye JSON Schema kaise lagaya, aur 3) Daily Streak logic kaise kaam karta hai. Tumhara prototype ekdum solid hai!', time: '10:20 AM' }
+        ],
+        's2': [
+          { sender: 'peer', text: 'Hi Aarav! Best of luck for your mini-project presentation. Need any DBMS or AI prompt engineering tips?', time: 'Yesterday' }
+        ],
+        's3': [
+          { sender: 'peer', text: 'Hello junior! Let me know if you need the Analog Communication & Microcontrollers formula sheet before sessional exams.', time: '2 days ago' }
+        ]
+      }
+    };
+
+    // =========================================================================
+    // 2. BUILT-IN ENGINEERING KNOWLEDGE ENGINE (100% OFFLINE-SAFE FALLBACK)
+    // =========================================================================
+    const SUBJECT_KNOWLEDGE_BANK = {
+      "Data Structures & Algorithms": {
+        mcqs: [
+          {
+            question: "What is the worst-case time complexity of searching for an element in a self-balancing AVL Tree with n nodes?",
+            options: ["O(n)", "O(log n)", "O(1)", "O(n log n)"],
+            correctAnswerIndex: 1,
+            explanation: "An AVL tree strictly maintains a balance factor of -1, 0, or +1 for every node, guaranteeing that the height of the tree never exceeds 1.44 log2(n). Hence, search, insertion, and deletion all run in O(log n) worst-case time."
+          },
+          {
+            question: "Which data structure is used internally to implement Breadth-First Search (BFS) traversal of a Graph?",
+            options: ["Stack", "FIFO Queue", "Priority Queue (Min-Heap)", "HashSet only"],
+            correctAnswerIndex: 1,
+            explanation: "BFS explores vertices level-by-level based on their distance from the source node. A First-In-First-Out (FIFO) Queue ensures nodes discovered earlier are visited first."
+          },
+          {
+            question: "In Java, when two distinct keys produce the same hash code in a HashMap (Java 8+), what happens when a bucket exceeds the TREEIFY_THRESHOLD (8)?",
+            options: ["The HashMap throws a CollisionOverflowException", "The linked list in that bucket converts into a Red-Black Tree", "The entire table is immediately flushed", "It switches to open addressing with quadratic probing"],
+            correctAnswerIndex: 1,
+            explanation: "In Java 8 and later, once a bucket contains more than 8 nodes (and capacity >= 64), the LinkedList converts into a balanced Red-Black Tree, improving worst-case lookup from O(n) to O(log n)."
+          },
+          {
+            question: "Which algorithm finds the shortest paths from a single source vertex to all other vertices in a graph that may contain negative edge weights (but no negative cycles)?",
+            options: ["Dijkstra's Algorithm", "Bellman-Ford Algorithm", "Prim's Algorithm", "Kruskal's Algorithm"],
+            correctAnswerIndex: 1,
+            explanation: "Bellman-Ford relaxes all E edges (V - 1) times in O(V * E) time, enabling it to accurately handle negative edge weights and detect negative weight cycles, unlike greedy Dijkstra's algorithm."
+          },
+          {
+            question: "What is the auxiliary space complexity of standard Merge Sort on an array of size n?",
+            options: ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+            correctAnswerIndex: 2,
+            explanation: "Merge Sort requires an auxiliary temporary array of size O(n) during the merge step to combine two sorted halves, plus O(log n) recursion stack space, giving O(n) total auxiliary space."
+          }
+        ],
+        flashcards: [
+          {
+            question: "Why does Dijkstra's Algorithm fail on graphs with negative edge weights?",
+            crispAnswer: "Dijkstra assumes that once a vertex is marked visited from the Min-Heap, its shortest distance is finalized. A negative weight edge discovered later could reduce a previously finalized path cost, which Dijkstra never re-evaluates.",
+            examinerTrap: "If the examiner asks how to fix it without Bellman-Ford: mention that simply adding a constant offset to all edges does NOT work because paths with more edges get penalized disproportionately!"
+          },
+          {
+            question: "Difference between Internal and External Fragmentation in Memory / Arrays vs Linked Lists?",
+            crispAnswer: "Arrays require contiguous memory (can fail to allocate even if total free RAM is sufficient -> External Fragmentation). Linked Lists allocate nodes non-contiguously on the heap using pointers, incurring extra pointer overhead per node.",
+            examinerTrap: "Why do Arrays have better CPU cache locality than Linked Lists? Because contiguous elements are prefetched together into L1/L2 cache lines!"
+          },
+          {
+            question: "How do you detect a cycle in a Singly Linked List in O(n) time and O(1) auxiliary space?",
+            crispAnswer: "Use Floyd's Tortoise and Hare (Slow and Fast Pointer) algorithm. Move `slow` by 1 step and `fast` by 2 steps. If they meet at the same node, a cycle exists.",
+            examinerTrap: "How to find the exact starting node of the cycle? Reset `slow` to `head` after collision and move both `slow` and `fast` 1 step at a time; their meeting point is the cycle start!"
+          },
+          {
+            question: "Master Theorem Formula for Divide & Conquer Recurrences: T(n) = aT(n/b) + f(n)",
+            crispAnswer: "Compare f(n) with n^(log_b(a)). For Binary Search: a=1, b=2, f(n)=O(1) => T(n) = O(log n). For Merge Sort: a=2, b=2, f(n)=O(n) => T(n) = O(n log n).",
+            examinerTrap: "Does Master Theorem apply if a < 1 or b <= 1? No! You must divide into at least 1 subproblem of strictly smaller size."
+          }
+        ],
+        summaryPoints: [
+          "HashMap Lookup: O(1) average, O(log n) worst-case in Java 8+ due to Red-Black Treeify.",
+          "Binary Heap: Insert/DeleteMin in O(log n), Build-Heap in O(n) linear time using bottom-up heapify.",
+          "Dynamic Programming requires Optimal Substructure + Overlapping Subproblems.",
+          "QuickSort: O(n log n) average, O(n^2) worst-case (mitigated using Randomized Pivot)."
+        ]
+      },
+      "Java & Object Oriented Programming": {
+        mcqs: [
+          {
+            question: "Why is `String` immutable in Java?",
+            options: ["Because Java does not support character arrays", "For String Pool caching, thread safety, security, and hashcode caching in HashMap keys", "To consume more heap memory", "Because Strings are stored on the CPU registers"],
+            correctAnswerIndex: 1,
+            explanation: "String immutability allows the JVM String Constant Pool to safely share string literals across references, guarantees thread-safety without synchronization, prevents tampering with network/file paths, and caches the hashCode() for fast HashMap lookups."
+          },
+          {
+            question: "Which OOP principle is demonstrated when a subclass provides a specific implementation of a method already defined in its parent class with the exact same signature?",
+            options: ["Compile-time Polymorphism (Overloading)", "Runtime Polymorphism (Method Overriding)", "Encapsulation", "Tight Coupling"],
+            correctAnswerIndex: 1,
+            explanation: "Method Overriding is resolved at runtime by the JVM based on the actual object type (Dynamic Method Dispatch) rather than the reference variable type."
+          },
+          {
+            question: "In Java 8+, what can an `interface` contain that was not allowed in earlier versions of Java?",
+            options: ["Constructors and instance fields", "`default` and `static` methods with concrete method bodies", "Private constructors", "Destructors"],
+            correctAnswerIndex: 1,
+            explanation: "Java 8 introduced `default` and `static` methods in interfaces to allow backward-compatible API evolution (such as adding `.stream()` and `.forEach()` to the Collection interface without breaking existing classes)."
+          },
+          {
+            question: "What is the contract between `equals()` and `hashCode()` in Java's `Object` class?",
+            options: ["If two objects are equal according to equals(), they MUST have the same hashCode()", "Two objects with the same hashCode() are always equal", "equals() only compares memory addresses", "hashCode() must return a unique prime number for every object"],
+            correctAnswerIndex: 0,
+            explanation: "If `a.equals(b)` is true, then `a.hashCode() == b.hashCode()` must be true. Failing to override `hashCode()` when overriding `equals()` breaks HashMap and HashSet collections."
+          },
+          {
+            question: "What is the difference between `final`, `finally`, and `finalize()` in Java?",
+            options: ["They are synonyms for exception handling", "`final` is a modifier (constant/non-inheritable), `finally` is an exception block that always executes, and `finalize()` was a deprecated GC cleanup method", "`finally` prevents class inheritance", "`final` forces garbage collection"],
+            correctAnswerIndex: 1,
+            explanation: "`final` restricts modification (variables, methods, classes); `finally` ensures resource cleanup after try-catch; `finalize()` was an Object method called before GC (now deprecated in favor of try-with-resources)."
+          }
+        ],
+        flashcards: [
+          {
+            question: "Explain JVM Architecture: ClassLoader, Runtime Data Areas (Heap vs Stack), and Execution Engine.",
+            crispAnswer: "Heap stores all Objects and JRE classes (shared across threads, managed by Garbage Collector). Stack stores local primitive variables and method call frames (thread-private, LIFO).",
+            examinerTrap: "Where is the String Constant Pool located in Java 8+? Inside the main Heap memory space (moved out of PermGen so it can be garbage collected)!"
+          },
+          {
+            question: "Abstract Class vs Interface in Modern Java",
+            crispAnswer: "An Abstract class can have constructors, mutable instance state (fields), and any access modifiers; a class can `extends` only one abstract class. An Interface represents a capability contract (`implements` multiple allowed) and fields are implicitly `public static final`.",
+            examinerTrap: "Can an abstract class have zero abstract methods? Yes! Marking it abstract still prevents direct instantiation."
+          }
+        ],
+        summaryPoints: [
+          "Four Pillars of OOP: Encapsulation, Abstraction, Inheritance, and Polymorphism.",
+          "Checked Exceptions (IOException, SQLException) are verified at compile-time; Unchecked (NullPointerException) extend RuntimeException.",
+          "`volatile` keyword ensures visibility of variable changes across threads directly from main memory.",
+          "Use `StringBuilder` instead of `+` concatenation inside loops to avoid O(n^2) temporary String objects."
+        ]
+      },
+      "Database Management Systems (DBMS)": {
+        mcqs: [
+          {
+            question: "Which ACID property ensures that either all operations of a database transaction are reflected properly in the database, or none are?",
+            options: ["Consistency", "Atomicity", "Isolation", "Durability"],
+            correctAnswerIndex: 1,
+            explanation: "Atomicity ('All-or-Nothing' rule) is managed by the Transaction Manager using undo/redo recovery logs so partial failures roll back completely."
+          },
+          {
+            question: "A relation is in Third Normal Form (3NF) if it is in 2NF and contains no:",
+            options: ["Primary Keys", "Transitive Functional Dependencies of non-prime attributes on the candidate key", "Foreign Keys", "Composite Attributes"],
+            correctAnswerIndex: 1,
+            explanation: "2NF eliminates partial dependencies; 3NF eliminates transitive dependencies (where X -> Y and Y -> Z, with Y and Z being non-prime attributes) to prevent update, insertion, and deletion anomalies."
+          },
+          {
+            question: "Why do relational databases prefer B+ Trees over standard Binary Search Trees for disk indexing?",
+            options: ["B+ Trees have high fan-out (low tree height), minimizing slow disk I/O block reads, and link all leaf nodes sequentially for fast range queries", "B+ Trees require zero memory", "B+ Trees do not support range queries", "Binary Search Trees cannot store integers"],
+            correctAnswerIndex: 0,
+            explanation: "Because disk block reads are expensive, B+ Trees store hundreds of keys per node (high branching factor), keeping tree height to 3-4 levels even for millions of rows, and leaf pointers make `WHERE salary BETWEEN X AND Y` super fast."
+          },
+          {
+            question: "What is the exact difference between `DELETE`, `TRUNCATE`, and `DROP` in SQL?",
+            options: ["They all do the exact same thing", "DELETE is DML (row-by-row, supports WHERE & rollback); TRUNCATE is DDL (deallocates data pages, keeps schema); DROP removes the entire table data and schema", "TRUNCATE supports a WHERE clause", "DELETE removes the table structure"],
+            correctAnswerIndex: 1,
+            explanation: "DELETE logs individual row deletions and fires triggers; TRUNCATE resets the table faster by deallocating pages while preserving the table structure; DROP deletes the table definition altogether."
+          },
+          {
+            question: "In MongoDB (NoSQL) used in CampusConnect, what is an embedded sub-document vs a `ref` (ObjectId reference)?",
+            options: ["Embedded stores related data inside the same JSON/BSON document for 1-query atomic reads; `ref` normalizes data across collections using `.populate()`", "MongoDB does not support ObjectIds", "Embedded documents require SQL JOINs", "`ref` deletes the collection"],
+            correctAnswerIndex: 0,
+            explanation: "In our CampusConnect Post schema, `comments` are embedded subdocuments for instant feed rendering, while `author` uses an ObjectId `ref: 'User'` populated on read."
+          }
+        ],
+        flashcards: [
+          {
+            question: "Explain BCNF (Boyce-Codd Normal Form) vs 3NF.",
+            crispAnswer: "BCNF is a stricter version of 3NF where for every non-trivial functional dependency X -> Y, X MUST be a Super Key. 3NF allows X -> Y if Y is a prime attribute (part of some candidate key).",
+            examinerTrap: "Is BCNF decomposition always dependency-preserving? No! Decomposition into 3NF is always both lossless-join AND dependency-preserving, whereas BCNF is lossless-join but may lose functional dependencies."
+          },
+          {
+            question: "What is the Phantom Read problem in Concurrent Transactions?",
+            crispAnswer: "A Phantom Read occurs when Transaction T1 executes a range query twice, and between the two queries, Transaction T2 inserts or deletes new rows that match the `WHERE` clause, causing new 'phantom' rows to appear.",
+            examinerTrap: "Which SQL Isolation Level completely prevents Phantom Reads? `SERIALIZABLE` (or using Index Next-Key Locking in InnoDB)."
+          }
+        ],
+        summaryPoints: [
+          "ACID: Atomicity (Undo Log), Consistency (Integrity Constraints), Isolation (2PL / MVCC), Durability (Write-Ahead Redo Log).",
+          "SQL Execution Order: FROM/JOIN -> WHERE -> GROUP BY -> HAVING -> SELECT -> DISTINCT -> ORDER BY -> LIMIT.",
+          "Indexing Trade-off: Speeds up `SELECT` queries (`O(log n)`), but slows down `INSERT/UPDATE/DELETE` due to index maintenance.",
+          "CAP Theorem in Distributed DBs: Consistency, Availability, Partition Tolerance (choose CP or AP during network partition)."
+        ]
+      },
+      "Operating Systems": {
+        mcqs: [
+          {
+            question: "Which of the following is NOT one of Coffman's 4 necessary conditions for a Deadlock to occur?",
+            options: ["Mutual Exclusion", "Hold and Wait", "Preemption of resources", "Circular Wait"],
+            correctAnswerIndex: 2,
+            explanation: "The 4 necessary conditions for Deadlock are: Mutual Exclusion, Hold and Wait, **No Preemption**, and Circular Wait. Allowing preemption actually breaks deadlock!"
+          },
+          {
+            question: "What is 'Thrashing' in an Operating System's virtual memory management?",
+            options: ["High CPU utilization during gaming", "A state where the system spends more time paging (swapping pages between RAM and disk) than executing actual user processes", "Fast SSD read speed", "Overclocking the processor"],
+            correctAnswerIndex: 1,
+            explanation: "Thrashing happens when the degree of multiprogramming is too high and the sum of working sets exceeds physical RAM frame capacity, causing continuous page faults."
+          },
+          {
+            question: "Which CPU scheduling algorithm can suffer from 'Convoy Effect'?",
+            options: ["Round Robin (RR)", "First-Come, First-Served (FCFS)", "Shortest Remaining Time First (SRTF)", "Multilevel Feedback Queue"],
+            correctAnswerIndex: 1,
+            explanation: "In non-preemptive FCFS, if one CPU-bound process with a huge burst time arrives first, all shorter I/O-bound processes queue up behind it, drastically increasing average waiting time."
+          },
+          {
+            question: "What is the purpose of the Translation Lookaside Buffer (TLB) in paging?",
+            options: ["To store hard disk backups", "A fast hardware associative cache that stores recent Virtual Page-to-Physical Frame translations to avoid extra main memory page table lookups", "To schedule disk arm movement", "To compile C programs"],
+            correctAnswerIndex: 1,
+            explanation: "Without a TLB hit, every memory access requires two RAM accesses (one for the page table, one for the actual address). TLB reduces Effective Access Time (EAT) to near single-access speed."
+          },
+          {
+            question: "What is the difference between a Process and a Thread?",
+            options: ["Threads have separate address spaces", "A Process is an independent program in execution with isolated memory space; Threads are lightweight execution units within a process sharing Code, Data, and Heap segments", "Processes share the same stack", "Threads cannot run concurrently"],
+            correctAnswerIndex: 1,
+            explanation: "Threads within the same process share the Code, Data, Heap, and open files, while each thread maintains its own independent Stack, Program Counter (PC), and Registers."
+          }
+        ],
+        flashcards: [
+          {
+            question: "Explain Belady's Anomaly in Page Replacement Algorithms.",
+            crispAnswer: "Belady's Anomaly is the phenomenon where increasing the number of allocated physical page frames results in an INCREASE in the number of page faults. It occurs in FIFO page replacement.",
+            examinerTrap: "Why don't LRU and Optimal page replacement suffer from Belady's Anomaly? Because they are 'Stack Algorithms' where the set of pages in k frames is always a subset of the pages in k+1 frames!"
+          },
+          {
+            question: "Mutex vs Semaphore in Process Synchronization.",
+            crispAnswer: "A Mutex is a locking mechanism with strict ownership (only the thread that locked the mutex can unlock it). A Semaphore is a signaling mechanism (an integer counter modified via atomic `wait/P` and `signal/V` operations) to control access to a pool of resources.",
+            examinerTrap: "Is a Binary Semaphore identical to a Mutex? No! Any process can call `signal()` on a binary semaphore, whereas a Mutex enforces owner-only release and priority inheritance."
+          }
+        ],
+        summaryPoints: [
+          "Deadlock Handling: Prevention (break 1 of 4 conditions), Avoidance (Banker's Algorithm), Detection & Recovery, or Ignorance (Ostrich Algorithm).",
+          "Effective Access Time (EAT) = α(TLB + RAM) + (1 - α)(TLB + 2 * RAM) where α is TLB Hit Ratio.",
+          "Context Switch overhead is much lower between threads of the same process than between two heavyweight processes.",
+          "fork() system call returns 0 to the newly created child process and the child's PID to the parent process."
+        ]
+      },
+      "Analog & Digital Communication": {
+        mcqs: [
+          {
+            question: "In standard Double Sideband Full Carrier Amplitude Modulation (AM), what is the maximum transmission efficiency achieved at 100% modulation (μ = 1)?",
+            options: ["100%", "50%", "33.33%", "66.67%"],
+            correctAnswerIndex: 2,
+            explanation: "Total power Pt = Pc * (1 + μ^2 / 2). Useful information resides only in the sidebands Psb = Pc * (μ^2 / 2). At μ = 1, Efficiency η = (0.5) / (1 + 0.5) = 1/3 = 33.33%. Two-thirds of total power is wasted in the carrier!"
+          },
+          {
+            question: "According to the Nyquist Sampling Theorem, to reconstruct a band-limited signal with maximum frequency fm without aliasing, the sampling frequency fs must be:",
+            options: ["fs < fm", "fs >= 2 * fm", "fs = fm / 2", "fs = fm"],
+            correctAnswerIndex: 1,
+            explanation: "The Nyquist rate is 2*fm. Sampling below 2*fm causes spectral overlap in the frequency domain known as Aliasing, which can be prevented using an Anti-Aliasing Low Pass Filter prior to sampling."
+          },
+          {
+            question: "Why is Frequency Modulation (FM) much more immune to noise than Amplitude Modulation (AM)?",
+            options: ["FM uses lower bandwidth", "Information in FM is encoded in zero-crossings (frequency variations), and amplitude noise spikes can be clipped off at the receiver using an Amplitude Limiter", "FM does not require a carrier wave", "AM operates at optical frequencies"],
+            correctAnswerIndex: 1,
+            explanation: "Additive channel noise primarily corrupts signal amplitude. An FM receiver passes the signal through a Hard Limiter (clipper) to strip amplitude variations without losing frequency-encoded message information."
+          },
+          {
+            question: "According to Carson's Rule, the approximate transmission bandwidth of a Wideband FM (WBFM) signal with peak frequency deviation Δf and message bandwidth fm is:",
+            options: ["BW = 2 * fm", "BW = 2 * (Δf + fm)", "BW = Δf - fm", "BW = fm / 2"],
+            correctAnswerIndex: 1,
+            explanation: "Carson's Rule states BW = 2(Δf + fm) = 2 * fm * (1 + β), where β = Δf / fm is the modulation index."
+          },
+          {
+            question: "In a Superheterodyne AM Broadcast Receiver, what is the standard Intermediate Frequency (IF) used?",
+            options: ["50 Hz", "455 kHz", "10.7 MHz", "2.4 GHz"],
+            correctAnswerIndex: 1,
+            explanation: "Standard AM receivers use an Intermediate Frequency (IF) of 455 kHz (while FM receivers use 10.7 MHz) to achieve uniform selectivity and high adjacent-channel rejection."
+          }
+        ],
+        flashcards: [
+          {
+            question: "What is Pre-emphasis and De-emphasis in FM Communication?",
+            crispAnswer: "In FM, noise power spectral density increases parabolically with frequency (trianglar noise spectrum), hurting high-frequency audio components. A Pre-emphasis High-Pass Filter boosts high frequencies at the transmitter before modulation, and a De-emphasis Low-Pass Filter restores them at the receiver, significantly improving output SNR.",
+            examinerTrap: "What circuit is used for Pre-emphasis and De-emphasis? Pre-emphasis is a High-Pass RC network; De-emphasis is a simple Low-Pass RC integrator!"
+          },
+          {
+            question: "Image Frequency in a Superheterodyne Receiver and how to reject it.",
+            crispAnswer: "If the local oscillator is tuned to f_LO = f_s + f_IF, an unwanted signal at f_si = f_s + 2*f_IF also mixes with f_LO to produce the exact same Intermediate Frequency f_IF. This is the Image Frequency.",
+            examinerTrap: "Can the IF amplifier reject the image frequency once it enters the mixer? NO! Image frequency rejection MUST happen in the tuned RF stage BEFORE the mixer stage."
+          }
+        ],
+        summaryPoints: [
+          "AM Power Formula: Pt = Pc [1 + (μ^2)/2]; Sideband Bandwidth = 2 * fm.",
+          "SSB-SC suppresses both carrier and one sideband, reducing bandwidth to fm and saving 83.3% power compared to DSB-FC.",
+          "Shannon-Hartley Channel Capacity: C = B * log2(1 + S/N) bits/sec.",
+          "PCM (Pulse Code Modulation) Steps: Sampling -> Quantization -> Binary Encoding (SQNR increases by 6 dB per additional bit)."
+        ]
+      }
+    };
+
+    // =========================================================================
+    // 3. STATE MANAGEMENT & LOCALSTORAGE PERSISTENCE
+    // =========================================================================
+    let appState = loadAppState();
+    let currentTab = 'feed';
+    let currentFeedFilter = 'All';
+    let activeChatPeerId = 's1';
+    let currentAiSubTab = 'doubt';
+    let aiDoubtHistory = []; // Stores multi-turn conversation for real AI
+
+    // MCQ Quiz State
+    let activeMcqList = [];
+    let currentMcqIndex = 0;
+    let currentMcqScore = 0;
+    let mcqAnsweredCurrent = false;
+    let mcqTimerSeconds = 45;
+    let mcqTimerInterval = null;
+
+    // Flashcard State
+    let activeFlashcards = [];
+    let currentFlashcardIndex = 0;
+    let isFlashcardFlipped = false;
+
+    function loadAppState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.currentUser && Array.isArray(parsed.posts)) {
+            if (!parsed.announcement) {
+              parsed.announcement = DEFAULT_STATE.announcement;
+            }
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Using default state');
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    }
+
+    function saveAppState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Could not persist to localStorage');
+      }
+    }
+
+    function resetDemoData() {
+      appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      appState.isAuthenticated = true;
+      saveAppState();
+      renderAll();
+      showToast('Demo data restored to fresh college state!', 'info');
+    }
+
+    // =========================================================================
+    // 3B. MULTI-STEP OTP AUTHENTICATION & ADMIN LOGIN CONTROLLERS
+    // =========================================================================
+    function openAuthGateModal() {
+      document.getElementById('authGateModal').classList.remove('hidden');
+      goToStudentStep(1);
+      lucide.createIcons();
+    }
+
+    function closeAuthGateModal() {
+      document.getElementById('authGateModal').classList.add('hidden');
+    }
+
+    function switchAuthRoleTab(role) {
+      const sPanel = document.getElementById('auth-panel-student');
+      const aPanel = document.getElementById('auth-panel-admin');
+      const sTab = document.getElementById('auth-tab-student');
+      const aTab = document.getElementById('auth-tab-admin');
+
+      if (role === 'student') {
+        sPanel.classList.remove('hidden');
+        aPanel.classList.add('hidden');
+        sTab.className = 'py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all bg-indigo-600 text-white shadow-sm flex items-center justify-center gap-2';
+        aTab.className = 'py-2.5 px-4 rounded-xl text-xs font-bold transition-all text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2';
+      } else {
+        sPanel.classList.add('hidden');
+        aPanel.classList.remove('hidden');
+        aTab.className = 'py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center justify-center gap-2';
+        sTab.className = 'py-2.5 px-4 rounded-xl text-xs font-bold transition-all text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2';
+      }
+      lucide.createIcons();
+    }
+
+    function goToStudentStep(stepNumber) {
+      [1, 2, 3].forEach(n => {
+        const formEl = document.getElementById(`student-step-${n}`);
+        if (formEl) formEl.classList.toggle('hidden', n !== stepNumber);
+
+        const indEl = document.getElementById(`step-ind-${n}`);
+        if (indEl) {
+          indEl.className = n <= stepNumber
+            ? 'flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-extrabold'
+            : 'flex items-center gap-1.5 text-slate-400';
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function handleSendStudentOtp(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmailInput').value.trim();
+      const phone = document.getElementById('loginPhoneInput').value.trim();
+
+      if (!email || phone.length < 10) {
+        showToast('Please enter a valid email and 10-digit mobile number', 'warning');
+        return;
+      }
+
+      // Generate random 6-digit OTP
+      generatedOtpCode = String(Math.floor(100000 + Math.random() * 900000));
+      document.getElementById('generatedOtpDisplay').textContent = generatedOtpCode;
+      document.getElementById('otpTargetLabel').textContent = `+91-${phone} & ${email}`;
+      document.getElementById('otpCodeInput').value = '';
+
+      // Pre-populate username suggestion from email
+      const emailPrefix = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() || 'student';
+      document.getElementById('regUsernameInput').value = `@${emailPrefix}`;
+
+      goToStudentStep(2);
+      showToast(`📲 SMS/Email OTP Sent: ${generatedOtpCode} (Click Auto-Fill OTP)`, 'success');
+    }
+
+    function autoFillStudentOtp() {
+      document.getElementById('otpCodeInput').value = generatedOtpCode;
+      showToast('OTP Auto-Filled! Click Verify OTP & Continue.');
+    }
+
+    function handleVerifyStudentOtp(event) {
+      event.preventDefault();
+      const entered = document.getElementById('otpCodeInput').value.trim();
+      if (entered !== generatedOtpCode) {
+        showToast(`Invalid OTP! Please enter ${generatedOtpCode} or click Auto-Fill OTP.`, 'warning');
+        return;
+      }
+      showToast('✅ Mobile & Email OTP Verified Successfully!');
+      goToStudentStep(3);
+    }
+
+    function handleCompleteStudentSignup(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmailInput').value.trim();
+      const phone = document.getElementById('loginPhoneInput').value.trim();
+      let username = document.getElementById('regUsernameInput').value.trim() || '@student';
+      if (!username.startsWith('@')) username = '@' + username;
+      const fullName = document.getElementById('regFullNameInput').value.trim() || 'Campus Student';
+      const branch = document.getElementById('regBranchInput').value;
+      const year = document.getElementById('regYearInput').value;
+      const skillsRaw = document.getElementById('regSkillsInput').value;
+      const bio = document.getElementById('regBioInput').value.trim() || 'Engineering student on CampusConnect.';
+
+      const parts = fullName.split(' ').filter(Boolean);
+      const initials = parts.length >= 2
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : fullName.slice(0, 2).toUpperCase();
+
+      const skillsArr = skillsRaw.split(',').map(s => s.trim()).filter(Boolean);
+
+      appState.currentUser = {
+        id: 'u_' + Date.now(),
+        username,
+        name: fullName,
+        initials,
+        collegeEmail: email,
+        phone,
+        branch,
+        year,
+        bio,
+        skills: skillsArr.length ? skillsArr : ['Java', 'DSA'],
+        studyStreak: 1,
+        isVerified: true
+      };
+
+      // Also add/update student in Campus Directory so they appear live!
+      const existingIdx = appState.students.findIndex(s => s.collegeEmail.toLowerCase() === email.toLowerCase());
+      const directoryEntry = {
+        id: appState.currentUser.id,
+        name: fullName,
+        initials,
+        avatarGrad: 'from-indigo-600 to-fuchsia-600',
+        collegeEmail: email,
+        branch,
+        year,
+        bio: `${username} | ${bio}`,
+        skills: appState.currentUser.skills,
+        achievements: ['Verified via Campus OTP Portal', `${year} ${branch} Member`],
+        githubUrl: 'https://github.com/',
+        studyStreak: 1,
+        isVerified: true,
+        online: true
+      };
+
+      if (existingIdx >= 0) {
+        appState.students[existingIdx] = directoryEntry;
+      } else {
+        appState.students.unshift(directoryEntry);
+      }
+
+      appState.isAuthenticated = true;
+      appState.isAdmin = false;
+      saveAppState();
+      closeAuthGateModal();
+      renderAll();
+      switchTab('feed');
+      showToast(`Welcome ${fullName} (${username})! Logged in & verified.`);
+    }
+
+    function quickDemoStudentLogin() {
+      appState.isAuthenticated = true;
+      appState.isAdmin = false;
+      saveAppState();
+      closeAuthGateModal();
+      renderAll();
+      showToast('Logged in with Demo Student Account (Aarav Sharma)!');
+    }
+
+    function autoFillAdminCredentials() {
+      document.getElementById('adminUsernameInput').value = 'admin';
+      document.getElementById('adminPasswordInput').value = 'Admin@123';
+      showToast('Admin credentials filled! Click Login.');
+    }
+
+    function handleAdminLogin(event) {
+      event.preventDefault();
+      const user = document.getElementById('adminUsernameInput').value.trim();
+      const pass = document.getElementById('adminPasswordInput').value.trim();
+
+      if (user === 'admin' && pass === 'Admin@123') {
+        appState.isAuthenticated = true;
+        appState.isAdmin = true;
+        appState.currentUser = {
+          id: 'admin_root',
+          username: '@admin',
+          name: 'Campus Admin (Dean Office)',
+          initials: 'AD',
+          collegeEmail: 'admin@gcoea.ac.in',
+          phone: '9999999999',
+          branch: 'CSE',
+          year: '4th Year',
+          bio: 'Official CampusConnect Administrator & Moderator.',
+          skills: ['Platform Admin', 'Verification', 'Moderation'],
+          studyStreak: 99,
+          isVerified: true
+        };
+        saveAppState();
+        closeAuthGateModal();
+        renderAll();
+        switchTab('admin');
+        showToast('🛡️ Logged in as Official Campus Administrator!');
+      } else {
+        showToast('Invalid Admin credentials! Use admin / Admin@123', 'warning');
+      }
+    }
+
+    // =========================================================================
+    // 3C. API KEY SETTINGS MODAL FUNCTIONS
+    // =========================================================================
+    function openApiKeyModal() {
+      const savedKey = localStorage.getItem(CUSTOM_KEY_STORAGE) || '';
+      document.getElementById('customGeminiKeyInput').value = savedKey;
+      document.getElementById('apiKeyModal').classList.remove('hidden');
+    }
+
+    function closeApiKeyModal() {
+      document.getElementById('apiKeyModal').classList.add('hidden');
+    }
+
+    function saveCustomGeminiKey() {
+      const val = document.getElementById('customGeminiKeyInput').value.trim();
+      if (val) {
+        localStorage.setItem(CUSTOM_KEY_STORAGE, val);
+        showToast('Custom Gemini API Key saved! Real AI queries will use your key.');
+      } else {
+        localStorage.removeItem(CUSTOM_KEY_STORAGE);
+        showToast('Using built-in live preview Gemini AI environment!', 'info');
+      }
+      closeApiKeyModal();
+    }
+
+    // =========================================================================
+    // 4. UI NOTIFICATIONS & THEME TOGGLE
+    // =========================================================================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colorClasses = type === 'success'
+        ? 'bg-emerald-600 text-white'
+        : type === 'warning'
+        ? 'bg-amber-500 text-slate-950'
+        : 'bg-indigo-600 text-white';
+
+      toast.className = `${colorClasses} px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 transition-all duration-300 transform translate-y-0 opacity-100 pointer-events-auto`;
+      toast.innerHTML = `<span>✨ ${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      htmlEl.classList.toggle('dark');
+      const isDark = htmlEl.classList.contains('dark');
+      const iconEl = document.getElementById('themeIcon');
+      iconEl.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+      lucide.createIcons();
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // =========================================================================
+    // 5. NAVIGATION & TAB SWITCHING
+    // =========================================================================
+    function switchTab(tabId) {
+      currentTab = tabId;
+      const views = ['feed', 'directory', 'chat', 'ai', 'admin'];
+      views.forEach(v => {
+        const viewEl = document.getElementById(`view-${v}`);
+        if (viewEl) {
+          viewEl.classList.toggle('hidden', v !== tabId);
+        }
+        // Desktop Nav Highlight
+        const dBtn = document.getElementById(`nav-${v}`);
+        if (dBtn) {
+          if (v === tabId) {
+            dBtn.className = 'nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-md shadow-indigo-500/20 transition-all';
+          } else {
+            dBtn.className = 'nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all';
+          }
+        }
+        // Mobile Nav Highlight
+        const mBtn = document.getElementById(`mnav-${v}`);
+        if (mBtn) {
+          if (v === tabId) {
+            mBtn.className = 'mnav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10';
+          } else {
+            mBtn.className = 'mnav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400';
+          }
+        }
+      });
+      if (tabId === 'admin') {
+        renderAdminDashboard();
+      }
+      lucide.createIcons();
+    }
+
+    function openMcqArenaDirect() {
+      switchTab('ai');
+      switchAiSubTab('mcq');
+    }
+
+    // =========================================================================
+    // 6. USER PROFILE & HEADER RENDERING
+    // =========================================================================
+    function renderUserHeaderAndSidebar() {
+      const u = appState.currentUser;
+      document.getElementById('headerStreakCount').textContent = u.studyStreak;
+      document.getElementById('widgetStreakBadge').textContent = `${u.studyStreak} Days`;
+
+      document.getElementById('headerUserAvatar').textContent = u.initials;
+      document.getElementById('headerUserName').textContent = u.name;
+      document.getElementById('headerUserMeta').textContent = `${u.username || '@student'} • ${u.branch}`;
+
+      document.getElementById('sideUserAvatar').textContent = u.initials;
+      document.getElementById('sideUserName').textContent = u.name;
+      const handleEl = document.getElementById('sideUserHandle');
+      if (handleEl) handleEl.textContent = u.username || '@student';
+      document.getElementById('sideUserEmail').textContent = u.collegeEmail;
+      document.getElementById('sideUserBranchYear').textContent = `${u.branch} • ${u.year}`;
+      document.getElementById('sideUserBio').textContent = u.bio;
+
+      // Render Official Announcement Banner in Feed
+      if (appState.announcement && appState.announcement.text) {
+        document.getElementById('announcementText').textContent = appState.announcement.text;
+        document.getElementById('announcementTime').textContent = appState.announcement.time || 'Pinned by Admin';
+      }
+
+      const skillsBox = document.getElementById('sideUserSkills');
+      skillsBox.innerHTML = u.skills.map(skill => `
+        <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
+          ${escapeHtml(skill)}
+        </span>
+      `).join('');
+
+      document.getElementById('sidebarDirCount').textContent = appState.students.length;
+    }
+
+    function openEditProfileModal() {
+      const u = appState.currentUser;
+      document.getElementById('modalUserName').value = u.name;
+      document.getElementById('modalUserBranch').value = u.branch;
+      document.getElementById('modalUserYear').value = u.year;
+      document.getElementById('modalUserBio').value = u.bio;
+      document.getElementById('modalUserSkills').value = u.skills.join(', ');
+      document.getElementById('editProfileModal').classList.remove('hidden');
+    }
+
+    function closeEditProfileModal() {
+      document.getElementById('editProfileModal').classList.add('hidden');
+    }
+
+    function saveUserProfile() {
+      const name = document.getElementById('modalUserName').value.trim() || 'Aarav Sharma';
+      const branch = document.getElementById('modalUserBranch').value;
+      const year = document.getElementById('modalUserYear').value;
+      const bio = document.getElementById('modalUserBio').value.trim();
+      const skillsRaw = document.getElementById('modalUserSkills').value;
+
+      const parts = name.split(' ').filter(Boolean);
+      const initials = parts.length >= 2
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : name.slice(0, 2).toUpperCase();
+
+      appState.currentUser.name = name;
+      appState.currentUser.initials = initials;
+      appState.currentUser.branch = branch;
+      appState.currentUser.year = year;
+      appState.currentUser.bio = bio;
+      appState.currentUser.skills = skillsRaw.split(',').map(s => s.trim()).filter(Boolean);
+
+      saveAppState();
+      renderUserHeaderAndSidebar();
+      closeEditProfileModal();
+      showToast('Student profile updated successfully!');
+    }
+
+    // =========================================================================
+    // 7. MODULE 1: INSTAGRAM-STYLE CAMPUS FEED
+    // =========================================================================
+    function setFeedFilter(category) {
+      currentFeedFilter = category;
+      ['All', 'Achievement', 'Project', 'Update', 'Bookmarked'].forEach(cat => {
+        const btn = document.getElementById(`feed-filter-${cat}`);
+        if (btn) {
+          if (cat === category) {
+            btn.className = 'feed-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-sm transition-all';
+          } else {
+            btn.className = 'feed-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all';
+          }
+        }
+      });
+      renderFeed();
+    }
+
+    function handleCreatePost() {
+      const contentEl = document.getElementById('newPostContent');
+      const categoryEl = document.getElementById('newPostCategory');
+      const tagsEl = document.getElementById('newPostTags');
+      const linkEl = document.getElementById('newPostLink');
+
+      const content = contentEl.value.trim();
+      if (!content) {
+        showToast('Please write something about your achievement or project first!', 'warning');
+        return;
+      }
+
+      const tags = tagsEl.value
+        ? tagsEl.value.split(',').map(t => t.trim()).filter(Boolean)
+        : ['CampusUpdate'];
+
+      const u = appState.currentUser;
+      const newPost = {
+        id: 'p_' + Date.now(),
+        authorName: u.name,
+        authorInitials: u.initials,
+        authorGrad: 'from-indigo-600 to-fuchsia-600',
+        authorBranch: u.branch,
+        authorYear: u.year,
+        category: categoryEl.value,
+        timestamp: 'Just now',
+        content,
+        skillTags: tags,
+        projectLink: linkEl.value.trim(),
+        likes: 1,
+        isLiked: true,
+        isBookmarked: false,
+        comments: []
+      };
+
+      appState.posts.unshift(newPost);
+      saveAppState();
+
+      contentEl.value = '';
+      tagsEl.value = '';
+      linkEl.value = '';
+
+      renderFeed();
+      renderRightSidebarWidgets();
+      showToast('Post published live to Campus Feed!');
+    }
+
+    function toggleLikePost(postId) {
+      const post = appState.posts.find(p => p.id === postId);
+      if (!post) return;
+      post.isLiked = !post.isLiked;
+      post.likes += post.isLiked ? 1 : -1;
+      saveAppState();
+      renderFeed();
+    }
+
+    function toggleBookmarkPost(postId) {
+      const post = appState.posts.find(p => p.id === postId);
+      if (!post) return;
+      post.isBookmarked = !post.isBookmarked;
+      saveAppState();
+      renderFeed();
+      showToast(post.isBookmarked ? 'Post saved to bookmarks!' : 'Removed from bookmarks', 'info');
+    }
+
+    function handleAddComment(event, postId) {
+      event.preventDefault();
+      const inputEl = document.getElementById(`comment-input-${postId}`);
+      if (!inputEl) return;
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      const post = appState.posts.find(p => p.id === postId);
+      if (!post) return;
+
+      const u = appState.currentUser;
+      post.comments.push({
+        user: `${u.name} (${u.year} ${u.branch})`,
+        text,
+        time: 'Just now'
+      });
+
+      inputEl.value = '';
+      saveAppState();
+      renderFeed();
+      showToast('Comment added!');
+    }
+
+    function renderFeed() {
+      const container = document.getElementById('feedPostsContainer');
+      const searchQ = (document.getElementById('feedSearchInput')?.value || '').trim().toLowerCase();
+
+      const filtered = appState.posts.filter(post => {
+        if (currentFeedFilter === 'Bookmarked' && !post.isBookmarked) return false;
+        if (currentFeedFilter !== 'All' && currentFeedFilter !== 'Bookmarked' && post.category !== currentFeedFilter) {
+          return false;
+        }
+        if (searchQ) {
+          const hay = `${post.authorName} ${post.content} ${post.skillTags.join(' ')} ${post.authorBranch}`.toLowerCase();
+          if (!hay.includes(searchQ)) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center border border-slate-200 dark:border-slate-800">
+            <p class="text-sm font-bold text-slate-500">No campus posts match this filter yet.</p>
+            <button onclick="setFeedFilter('All')" class="mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold">Show All Posts</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(post => {
+        const badgeStyle = post.category === 'Achievement'
+          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+          : post.category === 'Project'
+          ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'
+          : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+
+        const categoryIcon = post.category === 'Achievement' ? '🏆 Achievement' : post.category === 'Project' ? '💻 Project' : '📢 Update';
+
+        return `
+          <article class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4 transition-all">
+            <!-- Author Header -->
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br ${post.authorGrad || 'from-indigo-600 to-violet-600'} text-white font-bold text-sm flex items-center justify-center shadow-sm">
+                  ${escapeHtml(post.authorInitials)}
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <h3 class="font-bold text-sm">${escapeHtml(post.authorName)}</h3>
+                    <i data-lucide="badge-check" class="w-4 h-4 text-indigo-500"></i>
+                    <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                      ${escapeHtml(post.authorBranch)} &bull; ${escapeHtml(post.authorYear)}
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(post.timestamp)} &bull; Verified Campus Member</p>
+                </div>
+              </div>
+
+              <span class="text-[11px] font-bold px-2.5 py-1 rounded-full border ${badgeStyle}">
+                ${categoryIcon}
+              </span>
+            </div>
+
+            <!-- Post Body -->
+            <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-line">${escapeHtml(post.content)}</p>
+
+            <!-- Optional Project / Certificate Link -->
+            ${post.projectLink ? `
+              <a href="${escapeHtml(post.projectLink)}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 hover:border-indigo-500 transition-colors group">
+                <div class="flex items-center gap-2.5 overflow-hidden">
+                  <div class="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                  </div>
+                  <div class="truncate">
+                    <p class="text-xs font-bold group-hover:text-indigo-500 truncate">Project Repository / Proof Link</p>
+                    <p class="text-[11px] text-slate-400 truncate">${escapeHtml(post.projectLink)}</p>
+                  </div>
+                </div>
+                <span class="text-xs font-semibold text-indigo-500 shrink-0 ml-2">Open &rarr;</span>
+              </a>
+            ` : ''}
+
+            <!-- Skill Tags -->
+            <div class="flex flex-wrap gap-1.5">
+              ${post.skillTags.map(tag => `
+                <button onclick="filterBySkillTag('${escapeHtml(tag)}')" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-colors">
+                  #${escapeHtml(tag)}
+                </button>
+              `).join('')}
+            </div>
+
+            <!-- Action Buttons Row (Like, Comment, Bookmark) -->
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-4">
+                <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 font-semibold ${post.isLiked ? 'text-rose-500' : 'text-slate-500 hover:text-rose-500'} transition-colors">
+                  <i data-lucide="heart" class="w-4 h-4 ${post.isLiked ? 'fill-rose-500 text-rose-500' : ''}"></i>
+                  <span>${post.likes} Likes</span>
+                </button>
+
+                <span class="flex items-center gap-1.5 font-semibold text-slate-500">
+                  <i data-lucide="message-circle" class="w-4 h-4"></i>
+                  <span>${post.comments.length} Comments</span>
+                </span>
+              </div>
+
+              <button onclick="toggleBookmarkPost('${post.id}')" class="flex items-center gap-1 font-semibold ${post.isBookmarked ? 'text-amber-500' : 'text-slate-400 hover:text-slate-600'}">
+                <i data-lucide="bookmark" class="w-4 h-4 ${post.isBookmarked ? 'fill-amber-500 text-amber-500' : ''}"></i>
+                <span>${post.isBookmarked ? 'Saved' : 'Save'}</span>
+              </button>
+            </div>
+
+            <!-- Comments List & Add Comment Input -->
+            <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 space-y-2.5">
+              ${post.comments.length > 0 ? `
+                <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                  ${post.comments.map(c => `
+                    <div class="text-xs bg-white dark:bg-slate-900/90 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
+                      <div class="flex items-center justify-between">
+                        <span class="font-bold text-indigo-600 dark:text-indigo-400">${escapeHtml(c.user)}</span>
+                        <span class="text-[10px] text-slate-400">${escapeHtml(c.time)}</span>
+                      </div>
+                      <p class="text-slate-700 dark:text-slate-300 mt-1">${escapeHtml(c.text)}</p>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+
+              <form onsubmit="handleAddComment(event, '${post.id}')" class="flex items-center gap-2">
+                <input id="comment-input-${post.id}" type="text" placeholder="Write an encouraging comment or ask a question..." class="flex-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <button type="submit" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs">
+                  Reply
+                </button>
+              </form>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function filterBySkillTag(tag) {
+      const searchInput = document.getElementById('feedSearchInput');
+      if (searchInput) {
+        searchInput.value = tag;
+        renderFeed();
+      }
+    }
+
+    function renderRightSidebarWidgets() {
+      // Trending Skills calculation
+      const skillCounts = {};
+      appState.students.forEach(s => s.skills.forEach(sk => {
+        skillCounts[sk] = (skillCounts[sk] || 0) + 1;
+      }));
+      appState.posts.forEach(p => p.skillTags.forEach(sk => {
+        skillCounts[sk] = (skillCounts[sk] || 0) + 1;
+      }));
+
+      const sortedSkills = Object.entries(skillCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      const skillsContainer = document.getElementById('trendingSkillsList');
+      skillsContainer.innerHTML = sortedSkills.map(([skill, count], idx) => `
+        <div onclick="jumpToDirectoryWithSkill('${escapeHtml(skill)}')" class="cursor-pointer flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors">
+          <div class="flex items-center gap-2.5">
+            <span class="w-5 h-5 rounded-md bg-indigo-500/10 text-indigo-500 font-bold text-[11px] flex items-center justify-center">${idx + 1}</span>
+            <span class="text-xs font-bold">#${escapeHtml(skill)}</span>
+          </div>
+          <span class="text-[11px] text-slate-400">${count} peers &rarr;</span>
+        </div>
+      `).join('');
+
+      // Quick Senior Mentors Widget
+      const mentorsWidget = document.getElementById('quickMentorsWidget');
+      const seniors = appState.students.filter(s => s.year === '4th Year' || s.year === '3rd Year').slice(0, 3);
+      mentorsWidget.innerHTML = seniors.map(s => `
+        <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="relative shrink-0">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-br ${s.avatarGrad} text-white font-bold text-xs flex items-center justify-center">
+                ${escapeHtml(s.initials)}
+              </div>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 absolute -bottom-0.5 -right-0.5"></span>
+            </div>
+            <div class="truncate">
+              <p class="text-xs font-bold truncate">${escapeHtml(s.name)}</p>
+              <p class="text-[10px] text-slate-400 truncate">${escapeHtml(s.branch)} &bull; ${escapeHtml(s.year)}</p>
+            </div>
+          </div>
+          <button onclick="openChatWithStudent('${s.id}')" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-indigo-600/10 hover:bg-indigo-600 text-indigo-600 dark:text-indigo-400 hover:text-white text-[11px] font-bold transition-colors">
+            Ask Senior
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function jumpToDirectoryWithSkill(skill) {
+      switchTab('directory');
+      const searchEl = document.getElementById('dirSearchInput');
+      if (searchEl) {
+        searchEl.value = skill;
+        renderDirectory();
+      }
+    }
+
+    // =========================================================================
+    // 8. MODULE 2: SENIOR-JUNIOR SKILL DIRECTORY
+    // =========================================================================
+    function renderDirectory() {
+      const q = (document.getElementById('dirSearchInput')?.value || '').trim().toLowerCase();
+      const branch = document.getElementById('dirBranchSelect')?.value || 'All';
+      const year = document.getElementById('dirYearSelect')?.value || 'All';
+      const skill = document.getElementById('dirSkillSelect')?.value || 'All';
+
+      const filtered = appState.students.filter(s => {
+        if (branch !== 'All' && s.branch !== branch) return false;
+        if (year !== 'All' && s.year !== year) return false;
+        if (skill !== 'All' && !s.skills.some(sk => sk.toLowerCase().includes(skill.toLowerCase()))) return false;
+        if (q) {
+          const hay = `${s.name} ${s.branch} ${s.year} ${s.bio} ${s.skills.join(' ')} ${s.achievements.join(' ')}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      const grid = document.getElementById('directoryGrid');
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white dark:bg-slate-900 rounded-2xl p-8 text-center border border-slate-200 dark:border-slate-800">
+            <p class="text-sm font-bold text-slate-500">No students found matching these filters.</p>
+            <button onclick="resetDirectoryFilters()" class="mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold">Reset Filters</button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(s => `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-4 hover:border-indigo-500/50 transition-all">
+          <div class="space-y-3">
+            <!-- Top Row: Avatar, Name, Streak -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${s.avatarGrad} text-white font-bold text-sm flex items-center justify-center shadow-md">
+                    ${escapeHtml(s.initials)}
+                  </div>
+                  ${s.online ? `<span class="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 absolute -bottom-0.5 -right-0.5" title="Online now"></span>` : ''}
+                </div>
+                <div>
+                  <div class="flex items-center gap-1">
+                    <h3 class="font-bold text-sm">${escapeHtml(s.name)}</h3>
+                    <i data-lucide="badge-check" class="w-4 h-4 text-indigo-500"></i>
+                  </div>
+                  <p class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">${escapeHtml(s.branch)} &bull; ${escapeHtml(s.year)}</p>
+                </div>
+              </div>
+              <span class="text-[11px] font-bold px-2 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                🔥 ${s.studyStreak}d
+              </span>
+            </div>
+
+            <!-- Bio -->
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">${escapeHtml(s.bio)}</p>
+
+            <!-- Skill Badges -->
+            <div class="flex flex-wrap gap-1.5">
+              ${s.skills.map(sk => `
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                  ${escapeHtml(sk)}
+                </span>
+              `).join('')}
+            </div>
+
+            <!-- Key Achievements -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Highlights &amp; Achievements</p>
+              ${(s.achievements || []).slice(0, 2).map(ach => `
+                <p class="text-[11px] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                  <span class="text-emerald-500">&bull;</span> ${escapeHtml(ach)}
+                </p>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+            <button onclick="openChatWithStudent('${s.id}')" class="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all">
+              <i data-lucide="message-square-plus" class="w-3.5 h-3.5"></i>
+              <span>Connect / Ask Senior</span>
+            </button>
+            ${s.githubUrl ? `
+              <a href="${escapeHtml(s.githubUrl)}" target="_blank" rel="noopener noreferrer" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors" title="GitHub Profile">
+                <i data-lucide="github" class="w-4 h-4"></i>
+              </a>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function resetDirectoryFilters() {
+      const sInput = document.getElementById('dirSearchInput');
+      const bSel = document.getElementById('dirBranchSelect');
+      const ySel = document.getElementById('dirYearSelect');
+      const kSel = document.getElementById('dirSkillSelect');
+      if (sInput) sInput.value = '';
+      if (bSel) bSel.value = 'All';
+      if (ySel) ySel.value = 'All';
+      if (kSel) kSel.value = 'All';
+      renderDirectory();
+    }
+
+    // =========================================================================
+    // 9. MODULE 3: SENIOR-JUNIOR MENTORSHIP CHAT
+    // =========================================================================
+    function openChatWithStudent(studentId) {
+      activeChatPeerId = studentId;
+      if (!appState.conversations[studentId]) {
+        const peer = appState.students.find(s => s.id === studentId);
+        appState.conversations[studentId] = [
+          {
+            sender: 'peer',
+            text: `Hi ${appState.currentUser.name}! I'm ${peer ? peer.name : 'your senior'}. Feel free to ask me about ${peer && peer.skills ? peer.skills.slice(0, 3).join(', ') : 'academics'}, projects, or placement prep!`,
+            time: 'Just now'
+          }
+        ];
+        saveAppState();
+      }
+      switchTab('chat');
+      renderMentorshipChat();
+    }
+
+    function selectChatPeer(studentId) {
+      activeChatPeerId = studentId;
+      if (!appState.conversations[studentId]) {
+        const peer = appState.students.find(s => s.id === studentId);
+        appState.conversations[studentId] = [
+          {
+            sender: 'peer',
+            text: `Hey ${appState.currentUser.name}! Happy to connect and help with ${peer ? peer.branch : 'engineering'} notes or career guidance.`,
+            time: 'Just now'
+          }
+        ];
+      }
+      renderMentorshipChat();
+    }
+
+    function renderMentorshipChat() {
+      const peersListEl = document.getElementById('chatPeersList');
+      const headerEl = document.getElementById('activeChatHeader');
+      const messagesEl = document.getElementById('chatMessagesContainer');
+      if (!peersListEl || !headerEl || !messagesEl) return;
+
+      const peer = appState.students.find(s => s.id === activeChatPeerId) || appState.students[0];
+      if (!peer) return;
+      activeChatPeerId = peer.id;
+
+      // Render left conversation list
+      peersListEl.innerHTML = appState.students.map(s => {
+        const isActive = s.id === activeChatPeerId;
+        const conv = appState.conversations[s.id] || [];
+        const lastMsg = conv.length > 0 ? conv[conv.length - 1].text : `Tap to ask about ${s.skills[0] || 'academics'}`;
+        return `
+          <button onclick="selectChatPeer('${s.id}')" class="w-full text-left p-3.5 flex items-center gap-3 transition-colors ${isActive ? 'bg-indigo-500/10 border-l-4 border-indigo-600' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}">
+            <div class="relative shrink-0">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${s.avatarGrad || 'from-indigo-600 to-violet-600'} text-white font-bold text-xs flex items-center justify-center">
+                ${escapeHtml(s.initials)}
+              </div>
+              ${s.online ? `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 absolute -bottom-0.5 -right-0.5"></span>` : ''}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-bold truncate">${escapeHtml(s.name)}</p>
+                <span class="text-[10px] font-semibold text-indigo-500">${escapeHtml(s.year)}</span>
+              </div>
+              <p class="text-[11px] text-slate-400 truncate mt-0.5">${escapeHtml(lastMsg)}</p>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      // Render active chat header
+      headerEl.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${peer.avatarGrad || 'from-indigo-600 to-violet-600'} text-white font-bold text-xs flex items-center justify-center">
+            ${escapeHtml(peer.initials)}
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h3 class="font-bold text-sm">${escapeHtml(peer.name)}</h3>
+              <i data-lucide="badge-check" class="w-4 h-4 text-indigo-500"></i>
+              <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500">${escapeHtml(peer.branch)} &bull; ${escapeHtml(peer.year)}</span>
+            </div>
+            <p class="text-[11px] text-slate-400">Mentoring in: ${escapeHtml((peer.skills || []).slice(0, 4).join(', '))}</p>
+          </div>
+        </div>
+        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+          ● AI Senior Active
+        </span>
+      `;
+
+      // Render messages
+      const messages = appState.conversations[activeChatPeerId] || [];
+      messagesEl.innerHTML = messages.map(m => {
+        if (m.sender === 'me') {
+          return `
+            <div class="flex justify-end">
+              <div class="max-w-md bg-indigo-600 text-white rounded-2xl rounded-br-none px-4 py-2.5 text-xs shadow-sm">
+                <p class="leading-relaxed">${escapeHtml(m.text)}</p>
+                <span class="block text-[10px] text-indigo-200 text-right mt-1">${escapeHtml(m.time)}</span>
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="flex items-start gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br ${peer.avatarGrad || 'from-indigo-600 to-violet-600'} text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-1">
+                ${escapeHtml(peer.initials)}
+              </div>
+              <div class="max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 text-xs shadow-sm">
+                <p class="leading-relaxed text-slate-700 dark:text-slate-200">${escapeHtml(m.text)}</p>
+                <span class="block text-[10px] text-slate-400 mt-1">${escapeHtml(m.time)}</span>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      lucide.createIcons();
+    }
+
+    function handleSendChatMessage(event) {
+      event.preventDefault();
+      const inputEl = document.getElementById('chatMessageInput');
+      const text = inputEl.value.trim();
+      if (!text) return;
+      inputEl.value = '';
+      pushChatMessage(text);
+    }
+
+    function sendQuickMentorshipMsg(text) {
+      pushChatMessage(text);
+    }
+
+    function attachMockPdfNote() {
+      pushChatMessage('📎 Shared File: 3rd_Year_Mini_Project_Synopsis_&_Resume.pdf (1.4 MB)');
+      showToast('Attached PDF document to mentorship chat!', 'info');
+    }
+
+    function pushChatMessage(text) {
+      if (!appState.conversations[activeChatPeerId]) {
+        appState.conversations[activeChatPeerId] = [];
+      }
+      appState.conversations[activeChatPeerId].push({
+        sender: 'me',
+        text,
+        time: 'Just now'
+      });
+      saveAppState();
+      renderMentorshipChat();
+
+      // Realistic AI-powered senior response for Mentorship Chat
+      const peer = appState.students.find(s => s.id === activeChatPeerId) || appState.students[0];
+      setTimeout(async () => {
+        let reply = '';
+        try {
+          const mentorSys = `You are ${peer.name}, a helpful ${peer.year} ${peer.branch} senior at an Indian engineering college. Your skills are ${peer.skills.join(', ')} and achievements are ${peer.achievements.join(', ')}. Reply warmly in 2-3 concise sentences (Hinglish/English mix allowed) to your junior ${appState.currentUser.name}.`;
+          reply = await callGeminiApi(text, mentorSys);
+        } catch (err) {
+          reply = `Sure ${appState.currentUser.name}! For ${peer.skills[0]} and your ${appState.currentUser.year} academics, focus on strong fundamentals and daily MCQ practice. I've shared my revision notes!`;
+          if (text.toLowerCase().includes('pdf') || text.toLowerCase().includes('note')) {
+            reply = `📄 Here you go! I've shared the Google Drive folder containing Previous Year Question (PYQ) solutions and short viva notes for ${peer.branch}. Best of luck!`;
+          } else if (text.toLowerCase().includes('placement') || text.toLowerCase().includes('dsa')) {
+            reply = `💼 For campus placements: Master Arrays, Trees, Graphs, and Dynamic Programming in Java, plus DBMS normalization & OS synchronization. Keep your Daily Study Streak active on CampusConnect!`;
+          }
+        }
+
+        appState.conversations[activeChatPeerId].push({
+          sender: 'peer',
+          text: reply.trim(),
+          time: 'Just now'
+        });
+        saveAppState();
+        renderMentorshipChat();
+      }, 650);
+    }
+
+    // =========================================================================
+    // 9B. ADMIN CONTROL CENTER DASHBOARD LOGIC
+    // =========================================================================
+    function renderAdminDashboard() {
+      const statusBox = document.getElementById('adminAccessStatusBox');
+      if (appState.isAdmin) {
+        statusBox.innerHTML = `
+          <span class="px-3.5 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2">
+            <i data-lucide="unlock" class="w-4 h-4"></i> Full Admin Privileges Active (admin)
+          </span>
+        `;
+      } else {
+        statusBox.innerHTML = `
+          <button onclick="openAdminLoginQuick()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 shadow-md">
+            <i data-lucide="lock" class="w-4 h-4"></i> Login as Admin (admin / Admin@123)
+          </button>
+        `;
+      }
+
+      // KPI Metrics
+      const verifiedCount = appState.students.filter(s => s.isVerified).length;
+      const totalChats = Object.keys(appState.conversations).length;
+      const kpiGrid = document.getElementById('adminKpiGrid');
+      kpiGrid.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Registered Students</p>
+          <p class="text-2xl font-extrabold text-indigo-500 mt-1">${appState.students.length}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Verified .ac.in Profiles</p>
+          <p class="text-2xl font-extrabold text-emerald-500 mt-1">${verifiedCount}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Campus Feed Posts</p>
+          <p class="text-2xl font-extrabold text-amber-500 mt-1">${appState.posts.length}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Active Mentor Chats</p>
+          <p class="text-2xl font-extrabold text-fuchsia-500 mt-1">${totalChats}</p>
+        </div>
+      `;
+
+      // Students Table
+      const tbody = document.getElementById('adminStudentsTableBody');
+      tbody.innerHTML = appState.students.map(s => `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+          <td class="py-3 px-3">
+            <div class="font-bold text-slate-800 dark:text-slate-100">${escapeHtml(s.name)}</div>
+            <div class="text-[11px] text-slate-400">${escapeHtml(s.collegeEmail)}</div>
+          </td>
+          <td class="py-3 px-3 font-semibold">${escapeHtml(s.branch)} &bull; ${escapeHtml(s.year)}</td>
+          <td class="py-3 px-3 text-slate-500">${escapeHtml(s.skills.slice(0, 3).join(', '))}</td>
+          <td class="py-3 px-3 font-bold text-amber-500">🔥 ${s.studyStreak}d</td>
+          <td class="py-3 px-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.isVerified ? 'bg-emerald-500/15 text-emerald-500' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}">
+              ${s.isVerified ? '✔ Verified' : 'Unverified'}
+            </span>
+          </td>
+          <td class="py-3 px-3 text-right space-x-1.5">
+            <button onclick="adminToggleVerifyStudent('${s.id}')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 font-bold text-[11px]">
+              ${s.isVerified ? 'Revoke' : 'Verify'}
+            </button>
+            <button onclick="adminDeleteStudent('${s.id}')" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-bold text-[11px]">
+              Remove
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Posts Moderation List
+      const postsList = document.getElementById('adminPostsList');
+      postsList.innerHTML = appState.posts.map(p => `
+        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-xs">${escapeHtml(p.authorName)}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 font-bold">${escapeHtml(p.category)}</span>
+              <span class="text-[10px] text-slate-400">${escapeHtml(p.timestamp)}</span>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300 truncate mt-1">${escapeHtml(p.content)}</p>
+          </div>
+          <button onclick="adminDeletePost('${p.id}')" class="shrink-0 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white text-xs font-bold transition-colors">
+            Delete Post
+          </button>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function openAdminLoginQuick() {
+      openAuthGateModal();
+      switchAuthRoleTab('admin');
+      autoFillAdminCredentials();
+    }
+
+    function publishAdminAnnouncement() {
+      const input = document.getElementById('adminNoticeInput');
+      const text = input.value.trim();
+      if (!text) {
+        showToast('Please enter announcement text first!', 'warning');
+        return;
+      }
+      appState.announcement = {
+        text: `📢 ${text}`,
+        time: 'Pinned Just Now by Admin'
+      };
+      input.value = '';
+      saveAppState();
+      renderUserHeaderAndSidebar();
+      showToast('📢 Official Campus Notice broadcasted to all students!');
+    }
+
+    function adminToggleVerifyStudent(studentId) {
+      const st = appState.students.find(s => s.id === studentId);
+      if (!st) return;
+      st.isVerified = !st.isVerified;
+      saveAppState();
+      renderAdminDashboard();
+      renderDirectory();
+      showToast(`Updated verification status for ${st.name}`);
+    }
+
+    function adminDeleteStudent(studentId) {
+      appState.students = appState.students.filter(s => s.id !== studentId);
+      saveAppState();
+      renderAdminDashboard();
+      renderDirectory();
+      renderUserHeaderAndSidebar();
+      showToast('Student removed from directory', 'info');
+    }
+
+    function adminDeletePost(postId) {
+      appState.posts = appState.posts.filter(p => p.id !== postId);
+      saveAppState();
+      renderAdminDashboard();
+      renderFeed();
+      showToast('Post removed by Admin Moderator', 'info');
+    }
+
+    // =========================================================================
+    // 10. MODULE 4: AI STUDY BUDDY (REAL GEMINI API + SMART FALLBACK ENGINE)
+    // =========================================================================
+    function switchAiSubTab(subTab) {
+      currentAiSubTab = subTab;
+      ['doubt', 'mcq', 'revision'].forEach(t => {
+        const panel = document.getElementById(`ai-panel-${t}`);
+        if (panel) panel.classList.toggle('hidden', t !== subTab);
+
+        const btn = document.getElementById(`ai-sub-${t}`);
+        if (btn) {
+          if (t === subTab) {
+            btn.className = 'ai-sub-btn px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-sm flex items-center gap-1.5 transition-all';
+          } else {
+            btn.className = 'ai-sub-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 flex items-center gap-1.5 transition-all';
+          }
+        }
+      });
+      lucide.createIcons();
+    }
+
+    // Unified AI call: built-in Claude when hosted, otherwise Gemini with the user's key
+    let AI_SMP = null;
+    const AI_READY = (async () => { try { if (window.claude && claude.use) AI_SMP = await claude.use('sample'); } catch (e) {} })();
+    const _wait = ms => new Promise(r => setTimeout(r, ms));
+    const GURL = 'https://generativelanguage.googleapis.com/v1beta/';
+    const GPREF = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    let _avail = null;
+    async function _apiErr(r) {
+      let m = ''; try { m = (await r.json()).error?.message || ''; } catch (e) {}
+      const e = new Error(m || ('HTTP ' + r.status)); e.code = r.status;
+      e.bad = [400, 401, 403].includes(r.status) && /api key|API_KEY|permission|unregistered|not valid/i.test(m);
+      return e;
+    }
+    async function _models(key) {
+      if (_avail) return _avail;
+      try {
+        const r = await fetch(GURL + 'models?pageSize=200&key=' + encodeURIComponent(key));
+        if (!r.ok) { const e = await _apiErr(r); if (e.bad) throw e; return GPREF; }
+        const ok = ((await r.json()).models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace('models/', ''));
+        const pick = GPREF.filter(p => ok.includes(p));
+        const extra = ok.filter(n => /flash/.test(n) && !/(preview|exp|image|tts|live|audio|thinking|8b|lite)/.test(n) && !pick.includes(n));
+        return _avail = (pick.length || extra.length) ? [...pick, ...extra].slice(0, 5) : GPREF;
+      } catch (e) { if (e.bad) throw e; return GPREF; }
+    }
+    function _friendly(e) {
+      if (e.bad) return 'Gemini rejected the key. Re-enter it with the key button in the header.';
+      if (e.net) return 'Could not reach Google. Check your internet and open the file directly in Chrome or Edge.';
+      if (e.code === 429) return 'AI quota is used up for now. Try again in a minute.';
+      return 'AI error' + (e.code ? ' ' + e.code : '') + ': ' + String(e.message).slice(0, 120);
+    }
+    async function _gemini(contents, sys, schema) {
+      const key = localStorage.getItem(CUSTOM_KEY_STORAGE) || apiKey;
+      if (!key) throw new Error('No Gemini key yet. Click the key button in the header to add one.');
+      const ms = await _models(key); let err;
+      for (const mo of ms) {
+        for (let a = 0; a < 2; a++) {
+          const body = { contents, systemInstruction: { parts: [{ text: sys }] } };
+          if (schema) body.generationConfig = { responseMimeType: 'application/json', responseSchema: schema };
+          try {
+            const r = await fetch(GURL + 'models/' + mo + ':generateContent?key=' + encodeURIComponent(key), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (!r.ok) throw await _apiErr(r);
+            const j = await r.json();
+            const t = ((j.candidates || [])[0]?.content?.parts || []).map(p => p.text || '').join('');
+            if (!t) throw new Error('Empty answer from Gemini');
+            return t;
+          } catch (e) {
+            err = e;
+            if (e instanceof TypeError) { e.net = 1; if (a === 0) { await _wait(800); continue; } throw new Error(_friendly(e)); }
+            if (e.bad) throw new Error(_friendly(e));
+            if (e.code === 429 || e.code >= 500) { await _wait(a ? 1600 : 800); continue; }
+            break;
+          }
+        }
+      }
+      if (schema && err && err.code === 400) return _gemini(contents, sys + ' Respond with raw JSON only, no markdown fences.', null);
+      throw new Error(_friendly(err || new Error('Unknown error')));
+    }
+    async function callGeminiApi(promptText, systemInstructionText, jsonSchema = null, multiTurnContents = null) {
+      const contents = multiTurnContents || [{ role: 'user', parts: [{ text: promptText }] }];
+      await AI_READY;
+      const clean = t => jsonSchema ? t.replace(/```json|```/g, '').trim() : t;
+      if (AI_SMP) {
+        try {
+          const m = contents.map(c => ({ role: c.role === 'model' ? 'assistant' : 'user', content: c.parts.map(p => p.text || '').join('') }));
+          m[0].content = systemInstructionText + (jsonSchema ? '\nOutput ONLY valid JSON, no markdown fences, matching this JSON schema: ' + JSON.stringify(jsonSchema) : '') + '\n\n' + m[0].content;
+          const r = await AI_SMP(m, { cache: false });
+          if (r && r.text) return clean(r.text);
+        } catch (e) {
+          if (!localStorage.getItem(CUSTOM_KEY_STORAGE)) throw new Error((e && e.message) || 'The built-in AI is unavailable right now.');
+        }
+      }
+      return clean(await _gemini(contents, systemInstructionText, jsonSchema));
+    }
+
+
+    // -------------------------------------------------------------------------
+    // 10A. AI DOUBT & HOMEWORK SOLVER (WITH MULTI-TURN REAL GEMINI AI)
+    // -------------------------------------------------------------------------
+    function initAiDoubtChat() {
+      aiDoubtHistory = [];
+      const box = document.getElementById('aiDoubtMessages');
+      box.innerHTML = `
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-fuchsia-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div class="bg-slate-100 dark:bg-slate-800/90 rounded-2xl rounded-tl-none p-4 text-xs sm:text-sm space-y-2 max-w-3xl border border-slate-200/60 dark:border-slate-700/60">
+            <div class="flex items-center justify-between gap-2">
+              <p class="font-bold text-indigo-600 dark:text-indigo-400">Namaste ${escapeHtml(appState.currentUser.name)}! 👋 I am your Real AI Professor.</p>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500">● Live AI</span>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+              Ask me <strong>any question from any subject</strong> (Java, Python, C++, DSA, DBMS, OS, Analog Communication, Maths, or your Mini Project viva). I will answer your exact question live with examples, code, and viva tips!
+            </p>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function clearAiDoubtChat() {
+      initAiDoubtChat();
+      showToast('Doubt chat history cleared', 'info');
+    }
+
+    function triggerQuickDoubt(promptQuestion) {
+      const inputEl = document.getElementById('aiDoubtInput');
+      inputEl.value = promptQuestion;
+      handleAskAiDoubt(new Event('submit'));
+    }
+
+    async function handleAskAiDoubt(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      const inputEl = document.getElementById('aiDoubtInput');
+      const subject = document.getElementById('doubtSubjectSelect').value;
+      const topic = document.getElementById('doubtTopicInput').value.trim() || subject;
+      const question = inputEl.value.trim();
+
+      if (!question) return;
+      inputEl.value = '';
+
+      const box = document.getElementById('aiDoubtMessages');
+
+      // Append Student Question Bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'flex justify-end';
+      userBubble.innerHTML = `
+        <div class="max-w-xl bg-indigo-600 text-white rounded-2xl rounded-br-none px-4 py-3 text-xs sm:text-sm shadow-sm">
+          <p class="text-[10px] uppercase tracking-wider text-indigo-200 font-bold mb-1">${escapeHtml(subject)} &bull; ${escapeHtml(topic)}</p>
+          <p>${escapeHtml(question)}</p>
+        </div>
+      `;
+      box.appendChild(userBubble);
+
+      // Append Loading Indicator Bubble
+      const loadingId = 'loading_' + Date.now();
+      const loadingBubble = document.createElement('div');
+      loadingBubble.id = loadingId;
+      loadingBubble.className = 'flex items-start gap-3';
+      loadingBubble.innerHTML = `
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-fuchsia-600 text-white flex items-center justify-center shrink-0">
+          <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-tl-none px-4 py-3 text-xs text-slate-500">
+          Gemini AI Professor is solving your question: <strong>"${escapeHtml(question.slice(0, 60))}"</strong>...
+        </div>
+      `;
+      box.appendChild(loadingBubble);
+      box.scrollTop = box.scrollHeight;
+      lucide.createIcons();
+
+      // Add user turn to multi-turn history
+      aiDoubtHistory.push({
+        role: 'user',
+        parts: [{ text: `[Subject: ${subject} | Topic: ${topic}]\nQuestion: ${question}` }]
+      });
+
+      let finalHtmlAnswer = '';
+      try {
+        const sysPrompt = `You are a world-class Indian Engineering Professor and Coding Mentor helping a college student (${appState.currentUser.name}, ${appState.currentUser.year} ${appState.currentUser.branch}). Answer the student's exact question accurately, clearly, and thoroughly. Use Markdown headings, bullet points, step-by-step dry runs, well-commented code blocks with Time & Space Complexity (when applicable), and 1-2 Viva/Interview tips at the end.`;
+        const rawText = await callGeminiApi(question, sysPrompt, null, aiDoubtHistory);
+        aiDoubtHistory.push({
+          role: 'model',
+          parts: [{ text: rawText }]
+        });
+        finalHtmlAnswer = formatMarkdownToHtml(rawText);
+      } catch (err) {
+        finalHtmlAnswer = buildStructuredFallbackAnswer(subject, topic, question);
+      }
+
+      const loaderEl = document.getElementById(loadingId);
+      if (loaderEl) loaderEl.remove();
+
+      const aiBubble = document.createElement('div');
+      aiBubble.className = 'flex items-start gap-3';
+      aiBubble.innerHTML = `
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-fuchsia-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+          <i data-lucide="bot" class="w-5 h-5"></i>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-800/90 rounded-2xl rounded-tl-none p-4 text-xs sm:text-sm space-y-3 max-w-3xl border border-slate-200/70 dark:border-slate-700/70 leading-relaxed overflow-x-auto">
+          ${finalHtmlAnswer}
+        </div>
+      `;
+      box.appendChild(aiBubble);
+      box.scrollTop = box.scrollHeight;
+      lucide.createIcons();
+    }
+
+    function formatMarkdownToHtml(md) {
+      let safe = escapeHtml(md);
+      // Code blocks
+      safe = safe.replace(/```([\s\S]*?)```/g, (match, code) => {
+        const cleaned = code.replace(/^[a-zA-Z+#-]+\n/, '');
+        return `<pre class="bg-slate-950 text-emerald-400 font-mono text-xs p-3.5 rounded-xl overflow-x-auto my-2 border border-slate-800"><code>${cleaned}</code></pre>`;
+      });
+      // Inline code
+      safe = safe.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono text-[11px] text-indigo-600 dark:text-indigo-300">$1</code>');
+      // Headings
+      safe = safe.replace(/^### (.*)$/gm, '<h4 class="font-extrabold text-sm text-indigo-600 dark:text-indigo-400 mt-2">$1</h4>');
+      safe = safe.replace(/^## (.*)$/gm, '<h3 class="font-extrabold text-base text-indigo-600 dark:text-indigo-400 mt-3">$1</h3>');
+      // Bold
+      safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900 dark:text-white">$1</strong>');
+      // Line breaks
+      safe = safe.replace(/\n/g, '<br/>');
+      return safe;
+    }
+
+    function buildStructuredFallbackAnswer(subject, topic, question) {
+      const bank = SUBJECT_KNOWLEDGE_BANK[subject] || SUBJECT_KNOWLEDGE_BANK["Data Structures & Algorithms"];
+      const sampleFc = bank.flashcards[0];
+      return `
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+            <span class="font-extrabold text-indigo-600 dark:text-indigo-400">🎓 Professor's Structured Solution: ${escapeHtml(topic)}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-bold">Syllabus Verified</span>
+          </div>
+
+          <div>
+            <p class="font-bold text-slate-900 dark:text-white">1. Core Intuition &amp; Real-World Engineering Analogy</p>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">
+              In <strong>${escapeHtml(subject)}</strong>, understanding <strong>${escapeHtml(topic)}</strong> is all about optimizing resource trade-offs. ${escapeHtml(sampleFc.crispAnswer)}
+            </p>
+          </div>
+
+          <div>
+            <p class="font-bold text-slate-900 dark:text-white">2. Key Technical Breakdown &amp; Invariants</p>
+            <ul class="list-disc list-inside text-slate-600 dark:text-slate-300 space-y-1 mt-1">
+              ${bank.summaryPoints.map(pt => `<li>${escapeHtml(pt)}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div>
+            <p class="font-bold text-slate-900 dark:text-white">3. Reference Implementation / Formula Snippet</p>
+            <pre class="bg-slate-950 text-emerald-400 font-mono text-xs p-3.5 rounded-xl overflow-x-auto mt-1 border border-slate-800"><code>// ${escapeHtml(subject)} — ${escapeHtml(topic)} Reference
+public class CampusStudySolution {
+    // Time Complexity: O(log N) | Auxiliary Space: O(1)
+    public static int binarySearchVerify(int[] arr, int target) {
+        int low = 0, high = arr.length - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2; // Prevents integer overflow
+            if (arr[mid] == target) return mid;
+            else if (arr[mid] < target) low = mid + 1;
+            else high = mid - 1;
+        }
+        return -1;
+    }
+}</code></pre>
+          </div>
+
+          <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+            <p class="font-bold text-amber-600 dark:text-amber-400 text-xs">4. ⚠️ External Viva &amp; Placement Interview Tip</p>
+            <p class="text-xs text-slate-700 dark:text-slate-300 mt-0.5">${escapeHtml(sampleFc.examinerTrap)}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // -------------------------------------------------------------------------
+    // 10B. DAILY MCQ & STREAK ARENA (WITH CUSTOM TOPIC + QUESTION TIMER)
+    // -------------------------------------------------------------------------
+    function syncCustomMcqTopicFromSelect() {
+      const sel = document.getElementById('mcqSubjectSelect').value;
+      document.getElementById('mcqCustomTopicInput').value = '';
+      loadSubjectMcqQuiz();
+    }
+
+    function startMcqQuestionTimer() {
+      clearInterval(mcqTimerInterval);
+      mcqTimerSeconds = 45;
+      mcqTimerInterval = setInterval(() => {
+        if (mcqAnsweredCurrent) {
+          clearInterval(mcqTimerInterval);
+          return;
+        }
+        mcqTimerSeconds--;
+        const timerEl = document.getElementById('mcqTimerBadge');
+        if (timerEl) {
+          timerEl.textContent = `⏱️ ${mcqTimerSeconds}s`;
+          if (mcqTimerSeconds <= 10) {
+            timerEl.className = 'px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-500 font-mono font-bold text-xs animate-pulse';
+          }
+        }
+        if (mcqTimerSeconds <= 0) {
+          clearInterval(mcqTimerInterval);
+          if (!mcqAnsweredCurrent && activeMcqList[currentMcqIndex]) {
+            selectMcqOption(-1); // Time up reveal
+          }
+        }
+      }, 1000);
+    }
+
+    function loadSubjectMcqQuiz() {
+      const subject = document.getElementById('mcqSubjectSelect').value;
+      const bank = SUBJECT_KNOWLEDGE_BANK[subject] || SUBJECT_KNOWLEDGE_BANK["Data Structures & Algorithms"];
+      activeMcqList = JSON.parse(JSON.stringify(bank.mcqs));
+      currentMcqIndex = 0;
+      currentMcqScore = 0;
+      mcqAnsweredCurrent = false;
+      renderCurrentMcqCard();
+    }
+
+    async function generateFreshAiMcqs() {
+      const presetSubject = document.getElementById('mcqSubjectSelect').value;
+      const customTopic = document.getElementById('mcqCustomTopicInput').value.trim();
+      const targetSubject = customTopic || presetSubject;
+      const difficulty = document.getElementById('mcqDifficultySelect').value;
+      const btn = document.getElementById('generateMcqBtn');
+      const origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Generating 5 AI MCQs...</span>`;
+      lucide.createIcons();
+
+      try {
+        const schema = {
+          type: "ARRAY",
+          items: {
+            type: "OBJECT",
+            properties: {
+              question: { type: "STRING" },
+              options: { type: "ARRAY", items: { type: "STRING" } },
+              correctAnswerIndex: { type: "INTEGER" },
+              explanation: { type: "STRING" }
+            },
+            required: ["question", "options", "correctAnswerIndex", "explanation"]
+          }
+        };
+        const prompt = `Generate exactly 5 high-quality multiple-choice questions for B.Tech students on Subject/Topic: "${targetSubject}", Difficulty: "${difficulty}". Return strictly 5 objects with question, 4 options, correctAnswerIndex (0-3), and detailed explanation.`;
+        const rawJson = await callGeminiApi(prompt, "You are an expert GATE and Placement Assessment creator.", schema);
+        const parsed = JSON.parse(rawJson);
+        if (Array.isArray(parsed) && parsed.length >= 3) {
+          activeMcqList = parsed.slice(0, 5);
+          currentMcqIndex = 0;
+          currentMcqScore = 0;
+          mcqAnsweredCurrent = false;
+          renderCurrentMcqCard();
+          showToast(`✨ Fresh Real AI Quiz generated for "${targetSubject}"!`);
+        } else {
+          throw new Error('Fallback to curated');
+        }
+      } catch (e) {
+        loadSubjectMcqQuiz();
+        showToast(`Loaded 5 High-Yield ${presetSubject} Questions!`, 'info');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        lucide.createIcons();
+      }
+    }
+
+    function renderCurrentMcqCard() {
+      const container = document.getElementById('mcqArenaCard');
+      if (currentMcqIndex >= activeMcqList.length) {
+        clearInterval(mcqTimerInterval);
+        renderMcqCompletionSummary();
+        return;
+      }
+
+      const qObj = activeMcqList[currentMcqIndex];
+      const total = activeMcqList.length;
+      const progressPct = Math.round(((currentMcqIndex + 1) / total) * 100);
+
+      container.innerHTML = `
+        <div class="space-y-5">
+          <!-- Progress Bar, Timer & Question Counter -->
+          <div class="flex items-center justify-between text-xs font-bold">
+            <span class="text-indigo-600 dark:text-indigo-400">Question ${currentMcqIndex + 1} of ${total}</span>
+            <div class="flex items-center gap-2">
+              <span id="mcqTimerBadge" class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono">⏱️ 45s</span>
+              <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Score: ${currentMcqScore} / ${total}</span>
+            </div>
+          </div>
+          <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-indigo-600 to-fuchsia-500 transition-all duration-300" style="width: ${progressPct}%"></div>
+          </div>
+
+          <!-- Question Stem -->
+          <h3 class="text-sm sm:text-base font-extrabold leading-relaxed">${escapeHtml(qObj.question)}</h3>
+
+          <!-- 4 Clickable Options -->
+          <div class="space-y-2.5">
+            ${qObj.options.map((opt, idx) => {
+              const letter = ['A', 'B', 'C', 'D'][idx] || (idx + 1);
+              return `
+                <button onclick="selectMcqOption(${idx})" id="mcq-opt-${idx}" class="w-full text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 hover:border-indigo-500 bg-slate-50/70 dark:bg-slate-800/50 transition-all flex items-center gap-3 text-xs sm:text-sm font-medium">
+                  <span class="w-7 h-7 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center justify-center shrink-0">${letter}</span>
+                  <span>${escapeHtml(opt)}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Explanation Box (Hidden until answered) -->
+          <div id="mcqExplanationBox" class="hidden p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 space-y-1.5">
+            <p id="mcqFeedbackHeader" class="text-xs font-extrabold"></p>
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">${escapeHtml(qObj.explanation)}</p>
+          </div>
+
+          <!-- Next Button -->
+          <div class="flex justify-end pt-2">
+            <button onclick="nextMcqQuestion()" id="mcqNextBtn" class="hidden px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md">
+              <span>${currentMcqIndex + 1 === total ? 'Finish & Claim Daily Streak 🔥' : 'Next Question'}</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      startMcqQuestionTimer();
+      lucide.createIcons();
+    }
+
+    function selectMcqOption(selectedIndex) {
+      if (mcqAnsweredCurrent) return;
+      mcqAnsweredCurrent = true;
+
+      const qObj = activeMcqList[currentMcqIndex];
+      const isCorrect = selectedIndex === qObj.correctAnswerIndex;
+      if (isCorrect) currentMcqScore++;
+
+      qObj.options.forEach((_, idx) => {
+        const btn = document.getElementById(`mcq-opt-${idx}`);
+        if (!btn) return;
+        if (idx === qObj.correctAnswerIndex) {
+          btn.className = 'w-full text-left p-3.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center gap-3 text-xs sm:text-sm font-bold';
+        } else if (idx === selectedIndex && !isCorrect) {
+          btn.className = 'w-full text-left p-3.5 rounded-xl border-2 border-rose-500 bg-rose-500/15 text-rose-700 dark:text-rose-300 flex items-center gap-3 text-xs sm:text-sm font-bold';
+        } else {
+          btn.classList.add('opacity-50');
+        }
+      });
+
+      const expBox = document.getElementById('mcqExplanationBox');
+      const fbHeader = document.getElementById('mcqFeedbackHeader');
+      expBox.classList.remove('hidden');
+      fbHeader.textContent = isCorrect
+        ? '✅ Spot On! Correct Engineering Answer:'
+        : `❌ Not quite! Option ${['A', 'B', 'C', 'D'][qObj.correctAnswerIndex]} is correct:`;
+      fbHeader.className = isCorrect ? 'text-xs font-extrabold text-emerald-500' : 'text-xs font-extrabold text-rose-500';
+
+      document.getElementById('mcqNextBtn').classList.remove('hidden');
+    }
+
+    function nextMcqQuestion() {
+      currentMcqIndex++;
+      mcqAnsweredCurrent = false;
+      renderCurrentMcqCard();
+    }
+
+    function renderMcqCompletionSummary() {
+      // Increment student's Daily Study Streak!
+      appState.currentUser.studyStreak += 1;
+      saveAppState();
+      renderUserHeaderAndSidebar();
+      showToast(`🔥 Daily Study Streak increased to ${appState.currentUser.studyStreak} Days!`);
+
+      const total = activeMcqList.length;
+      const container = document.getElementById('mcqArenaCard');
+      container.innerHTML = `
+        <div class="text-center py-6 space-y-4">
+          <div class="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto">
+            <i data-lucide="trophy" class="w-8 h-8"></i>
+          </div>
+          <h3 class="text-xl font-extrabold">Daily Quiz Completed! 🎉</h3>
+          <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            You scored <strong class="text-indigo-500">${currentMcqScore} out of ${total}</strong> and boosted your Campus Study Streak to <strong class="text-amber-500">${appState.currentUser.studyStreak} Days 🔥</strong>
+          </p>
+          <div class="flex items-center justify-center gap-3 pt-2">
+            <button onclick="loadSubjectMcqQuiz()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">
+              Practice Again
+            </button>
+            <button onclick="switchAiSubTab('revision')" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-xs">
+              Review Flashcards &rarr;
+            </button>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    // -------------------------------------------------------------------------
+    // 10C. QUICK REVISION 3D FLASHCARDS
+    // -------------------------------------------------------------------------
+    function loadSubjectFlashcards() {
+      const subject = document.getElementById('flashcardSubjectSelect').value;
+      const bank = SUBJECT_KNOWLEDGE_BANK[subject] || SUBJECT_KNOWLEDGE_BANK["Data Structures & Algorithms"];
+      activeFlashcards = JSON.parse(JSON.stringify(bank.flashcards));
+      currentFlashcardIndex = 0;
+      isFlashcardFlipped = false;
+
+      const bulletsEl = document.getElementById('revisionSummaryBullets');
+      bulletsEl.innerHTML = bank.summaryPoints.map(pt => `
+        <li class="flex items-start gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+          <span class="text-indigo-500 font-bold">&bull;</span>
+          <span>${escapeHtml(pt)}</span>
+        </li>
+      `).join('');
+
+      renderCurrentFlashcard();
+    }
+
+    function renderCurrentFlashcard() {
+      if (!activeFlashcards.length) return;
+      const card = activeFlashcards[currentFlashcardIndex];
+      const inner = document.getElementById('flashcard3dInner');
+      inner.classList.toggle('rotate-y-180', isFlashcardFlipped);
+
+      document.getElementById('fcCounterText').textContent = `${currentFlashcardIndex + 1} / ${activeFlashcards.length}`;
+      document.getElementById('fcFrontQuestion').textContent = card.question;
+      document.getElementById('fcBackAnswer').textContent = card.crispAnswer;
+      document.getElementById('fcBackTrap').textContent = card.examinerTrap;
+    }
+
+    function flipCurrentFlashcard() {
+      isFlashcardFlipped = !isFlashcardFlipped;
+      renderCurrentFlashcard();
+    }
+
+    function nextFlashcard() {
+      isFlashcardFlipped = false;
+      currentFlashcardIndex = (currentFlashcardIndex + 1) % activeFlashcards.length;
+      renderCurrentFlashcard();
+    }
+
+    function prevFlashcard() {
+      isFlashcardFlipped = false;
+      currentFlashcardIndex = (currentFlashcardIndex - 1 + activeFlashcards.length) % activeFlashcards.length;
+      renderCurrentFlashcard();
+    }
+
+    async function generateFreshAiFlashcards() {
+      const presetSubject = document.getElementById('flashcardSubjectSelect').value;
+      const customUnit = document.getElementById('flashcardCustomTopicInput')?.value.trim();
+      const targetSubject = customUnit ? `${presetSubject} — ${customUnit}` : presetSubject;
+
+      const btn = document.getElementById('genFlashcardsBtn');
+      const orig = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Generating AI Cards...</span>`;
+      lucide.createIcons();
+
+      try {
+        const schema = {
+          type: "OBJECT",
+          properties: {
+            flashcards: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  question: { type: "STRING" },
+                  crispAnswer: { type: "STRING" },
+                  examinerTrap: { type: "STRING" }
+                },
+                required: ["question", "crispAnswer", "examinerTrap"]
+              }
+            },
+            summaryPoints: {
+              type: "ARRAY",
+              items: { type: "STRING" }
+            }
+          },
+          required: ["flashcards", "summaryPoints"]
+        };
+        const raw = await callGeminiApi(
+          `Create 5 high-yield B.Tech viva flashcards and 4 crisp unit revision summary bullets for Subject/Topic: "${targetSubject}".`,
+          "You are an engineering external viva examiner.",
+          schema
+        );
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.flashcards) && parsed.flashcards.length >= 2) {
+          activeFlashcards = parsed.flashcards;
+          currentFlashcardIndex = 0;
+          isFlashcardFlipped = false;
+          if (Array.isArray(parsed.summaryPoints) && parsed.summaryPoints.length) {
+            document.getElementById('revisionSummaryBullets').innerHTML = parsed.summaryPoints.map(pt => `
+              <li class="flex items-start gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+                <span class="text-indigo-500 font-bold">&bull;</span>
+                <span>${escapeHtml(pt)}</span>
+              </li>
+            `).join('');
+          }
+          renderCurrentFlashcard();
+          showToast(`✨ Generated Real AI Flashcards for ${targetSubject}!`);
+        } else {
+          throw new Error('Use curated');
+        }
+      } catch (e) {
+        loadSubjectFlashcards();
+        showToast(`Loaded Verified Viva Flashcards for ${presetSubject}!`, 'info');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+        lucide.createIcons();
+      }
+    }
+
+    // =========================================================================
+    // 11. INITIALIZE ENTIRE APPLICATION ON LOAD
+    // =========================================================================
+    function renderAll() {
+      renderUserHeaderAndSidebar();
+      setFeedFilter(currentFeedFilter);
+      renderRightSidebarWidgets();
+      renderDirectory();
+      renderMentorshipChat();
+      initAiDoubtChat();
+      loadSubjectMcqQuiz();
+      loadSubjectFlashcards();
+      renderAdminDashboard();
+      switchTab(currentTab);
+      switchAiSubTab(currentAiSubTab);
+
+      // Show Authentication Gate if not yet logged in during this session
+      if (!appState.isAuthenticated) {
+        openAuthGateModal();
+      } else {
+        closeAuthGateModal();
+      }
+    }
+
+    window.onload = function () {
+      renderAll();
+    };
+  </script>
+</body>
+</html>
